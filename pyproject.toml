@@ -1,0 +1,15 @@
+[project]
+name = "rag"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+	"pydantic>=2.11",
+	"fire>=0.7",
+	"tqdm>=4.68",
+	"bm25s>=0.3.0",
+	"transformers>=5.12",
+	"flake8>=7.3.0",
+	"mypy>=2.1.0",
+]
