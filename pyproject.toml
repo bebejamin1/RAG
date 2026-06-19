@@ -1,7 +1,7 @@
 [project]
 name = "rag"
 version = "0.1.0"
-description = "Add your description here"
+description = "Retrieval-Augmented Generation pipeline (ingestion, chunking, BM25/TF-IDF retrieval, recall@k evaluation, LLM answer generation) over a code repository."
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
