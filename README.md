@@ -24,16 +24,16 @@
 - [X] `flake8` + `mypy` — qualité de code
 
 ### Modèles Pydantic (7 obligatoires)
-- [ ] `MinimalSource` — `file_path`, `first_character_index`, `last_character_index`
-- [ ] `UnansweredQuestion` — `question_id` (uuid), `question`
-- [ ] `AnsweredQuestion(UnansweredQuestion)` — `sources`, `answer`
-- [ ] `RagDataset` — `rag_questions: List[AnsweredQuestion | UnansweredQuestion]`
-- [ ] `MinimalSearchResults` — `question_id`, `question`, `retrieved_sources`
-- [ ] `MinimalAnswer(MinimalSearchResults)` — `answer`
-- [ ] `StudentSearchResults` — `search_results`, `k`
-- [ ] `StudentSearchResultsAndAnswer(StudentSearchResults)` — `search_results: List[MinimalAnswer]`
+- [X] `MinimalSource` — `file_path`, `first_character_index`, `last_character_index`
+- [X] `UnansweredQuestion` — `question_id` (uuid), `question`
+- [X] `AnsweredQuestion(UnansweredQuestion)` — `sources`, `answer`
+- [X] `RagDataset` — `rag_questions: List[AnsweredQuestion | UnansweredQuestion]`
+- [X] `MinimalSearchResults` — `question_id`, `question`, `retrieved_sources`
+- [X] `MinimalAnswer(MinimalSearchResults)` — `answer`
+- [X] `StudentSearchResults` — `search_results`, `k`
+- [X] `StudentSearchResultsAndAnswer(StudentSearchResults)` — `search_results: List[MinimalAnswer]`
 
-### Ingestion / Indexing	
+### Ingestion / Indexing
 - [ ] Lire tous les fichiers utiles du repo `vllm-0.10.1/` (`.py`, `.md`, `.rst`...)
 - [ ] Implémenter le chunking **Python** (par fonction/classe via AST)
 - [ ] Implémenter le chunking **Markdown/texte** (par section/paragraphe)
@@ -175,6 +175,6 @@ transformers, dspy, fire, tqdm, langchain, bm25s, chromadb.
 
 • Évaluer la qualité de votre système de récupération à l'aide des métriques recall@k
 
-CLI        ??????????
+CLI   Command-Line Interface
 
 chunk max 2000char
