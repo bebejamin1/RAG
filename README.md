@@ -23,6 +23,8 @@
 - [X] `transformers` — LLM (Qwen3-0.6B)
 - [X] `flake8` + `mypy` — qualité de code
 
+dspy, langchain, chromadb
+
 ### Modèles Pydantic (7 obligatoires)
 - [X] `MinimalSource` — `file_path`, `first_character_index`, `last_character_index`
 - [X] `UnansweredQuestion` — `question_id` (uuid), `question`
