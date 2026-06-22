@@ -7,7 +7,7 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/06/19 11:28:05 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/06/19 17:18:33 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/06/20 09:56:41 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
@@ -18,3 +18,5 @@ pass
 # prend en compte plusieur elements
 # la frequence des termes de la requete apparaissent dans le codument
 # la lontueur du doc
+
+# chunking conseiller par sections
