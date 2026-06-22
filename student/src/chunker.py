@@ -2,34 +2,26 @@
 # ########################################################################### #
 #   shebang: 1                                                                #
 #                                                          :::      ::::::::  #
-#   indexing.py                                          :+:      :+:    :+:  #
+#   chunker.py                                           :+:      :+:    :+:  #
 #                                                      +:+ +:+         +:+    #
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
-#   Created: 2026/06/19 11:28:05 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/06/22 11:47:51 by bbeaurai           ###   ########.fr      #
+#   Created: 2026/06/22 14:51:11 by bbeaurai            #+#    #+#            #
+#   Updated: 2026/06/22 16:34:51 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
-import os
-import colorama as c
+# 3 chunker different, 1 pour les markdown, code python, doc
 
-# BM25 = Best match 25
+import ast  # noqa
 
-# prend en compte plusieur elements
-# la frequence des termes de la requete apparaissent dans le codument
-# la lontueur du doc
+from typing import Tuple
 
-# chunking conseiller par sections
+Chunk = Tuple[str, int, int, str]
 
 
-def index() -> None:
-    os.system("clear")
-    r = c.Style.RESET_ALL
-
-    print("\n" + c.Fore.CYAN + "".center(79, "="))
-    print(" INDEXING ".center(79, "="))
-    print("".center(79, "=") + r + "\n\n")
+def chunker(ok, daccord) -> None:
+    pass
 
 
-index()
+print(chunker.__class__)

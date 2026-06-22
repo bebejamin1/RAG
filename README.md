@@ -180,3 +180,5 @@ transformers, dspy, fire, tqdm, langchain, bm25s, chromadb.
 CLI   Command-Line Interface
 
 chunk max 2000char
+
+AST Abstract Syntax Tree
