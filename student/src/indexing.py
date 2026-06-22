@@ -7,11 +7,12 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/06/19 11:28:05 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/06/20 09:56:41 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/06/22 10:53:16 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
-pass
+import os
+import colorama as c
 
 # BM25 = Best match 25
 
@@ -20,3 +21,15 @@ pass
 # la lontueur du doc
 
 # chunking conseiller par sections
+
+
+def index() -> None:
+    os.system("clear")
+    r = c.Style.RESET_ALL
+
+    print("\n" + c.Fore.CYAN + "".center(79, "="))
+    print(" INDEXING ".center(79, "="))
+    print("".center(79, "=") + r + "\n\n")
+
+
+index()
