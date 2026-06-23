@@ -7,7 +7,7 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/06/22 14:51:11 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/06/22 16:34:51 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/06/23 09:55:55 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
@@ -20,8 +20,5 @@ from typing import Tuple
 Chunk = Tuple[str, int, int, str]
 
 
-def chunker(ok, daccord) -> None:
+def chunker() -> None:
     pass
-
-
-print(chunker.__class__)
