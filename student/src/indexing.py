@@ -7,12 +7,12 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/06/19 11:28:05 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/06/22 11:47:51 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/06/25 15:58:40 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
 import os
-import colorama as c
+# import colorama as c
 
 # BM25 = Best match 25
 
@@ -25,11 +25,11 @@ import colorama as c
 
 def index() -> None:
     os.system("clear")
-    r = c.Style.RESET_ALL
+    # r = c.Style.RESET_ALL
 
-    print("\n" + c.Fore.CYAN + "".center(79, "="))
-    print(" INDEXING ".center(79, "="))
-    print("".center(79, "=") + r + "\n\n")
+    # print("\n" + c.Fore.CYAN + "".center(79, "="))
+    # print(" INDEXING ".center(79, "="))
+    # print("".center(79, "=") + r + "\n\n")
 
 
 index()
