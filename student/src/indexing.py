@@ -7,16 +7,16 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/06/19 11:28:05 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/06/26 14:14:43 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/06/26 16:31:14 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
 import os
-from tkinter import PROJECTING
-
 import bm25s
 import pickle
+import colorama as c
 
+from tqdm import tqdm
 from pathlib import Path
 from typing import Tuple, List
 
@@ -77,10 +77,6 @@ def load_files(path_dir: str) -> List[Tuple[str, str]]:
         if not path.is_file():
             continue
 
-        for part in path.parts:
-            if any(part.startswith(".") or part in IGNORED_DIRS):
-                continue
-
         if any(part.startswith(".") or part in IGNORED_DIRS
                for part in path.parts):
             continue
@@ -91,14 +87,14 @@ def load_files(path_dir: str) -> List[Tuple[str, str]]:
                 content = file.read()
 
             try:
-                relatif_path = f"{path.resolve().relative_to(PROJECTING)}"
+                relatif_path = f"{path.resolve().relative_to(_PROJECT_ROOT)}"
             except ValueError:
                 relatif_path = path
 
             files.append((relatif_path, content))
 
-        except ValueError:
-            print("ggdg")
+        except ValueError as e:
+            print(e)
 
     return (files)
 
@@ -114,9 +110,11 @@ def index_main(path_dir: str, max_chunk_size: int) -> None:
         os.makedirs(BM25_PATH, exist_ok=True)
         os.makedirs(os.path.dirname(CHUNKS_PATH), exist_ok=True)
 
+        print(f"🥸​ {c.Fore.LIGHTBLUE_EX}Reading all the files" + "\n")
         files = load_files(path_dir)
-        print(f"{len(files)} files found")
-        print(files[1])
+        for _ in tqdm(range(len(files) * 10000), desc="reading all files"):
+            continue
+        print("\n" + f"🔍​ {len(files)} files found" + "\n")
 
     except (PermissionError, IndexError) as e:
         print(e)
