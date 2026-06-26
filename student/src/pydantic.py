@@ -7,7 +7,7 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/06/19 09:07:23 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/06/19 09:22:19 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/06/26 11:02:40 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
@@ -24,8 +24,10 @@ class MinimalSource(BaseModel):
 
     Attributes:
         file_path: Absolute or relative path to the source file.
-        first_character_index: Index of the first character in the source excerpt.
-        last_character_index: Index of the last character in the source excerpt.
+        first_character_index: Index of the first character in the source
+        excerpt.
+        last_character_index: Index of the last character in the source
+        excerpt.
     """
 
     file_path: str
@@ -123,7 +125,8 @@ class MinimalAnswer(MinimalSearchResults):
 # *                     represent search results                              *
 
 class StudentSearchResults(BaseModel):
-    """Represent the full set of retrieval results produced by a student pipeline.
+    """Represent the full set of retrieval results produced by a student
+    pipeline.
 
     Attributes:
         search_results: List of per-question retrieval results.
