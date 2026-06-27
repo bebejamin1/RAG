@@ -7,7 +7,7 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/06/19 11:28:05 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/06/27 21:14:53 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/06/27 21:15:13 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
@@ -15,7 +15,7 @@ import os
 import bm25s
 import pickle
 import colorama as c
-import numpy as np
+# import numpy as np
 
 from tqdm import tqdm
 from pathlib import Path
@@ -124,14 +124,6 @@ def index_main(path_dir: str, max_chunk_size: int) -> None:
         exit()
 
     all_chunks: list = []  # noqa
-
-
-
-
-
-
-
-
 
     # all_chunks = []
     # for file_path, content in tqdm(files, desc="Chunking"):
