@@ -7,7 +7,7 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/06/19 11:28:05 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/06/26 16:31:14 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/06/27 20:57:16 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
@@ -15,6 +15,7 @@ import os
 import bm25s
 import pickle
 import colorama as c
+import numpy as np
 
 from tqdm import tqdm
 from pathlib import Path
@@ -93,8 +94,9 @@ def load_files(path_dir: str) -> List[Tuple[str, str]]:
 
             files.append((relatif_path, content))
 
-        except ValueError as e:
-            print(e)
+        except Exception as e:
+            print(f"Unreadable {path_dir}: {e}")
+            exit()
 
     return (files)
 
@@ -112,10 +114,64 @@ def index_main(path_dir: str, max_chunk_size: int) -> None:
 
         print(f"🥸​ {c.Fore.LIGHTBLUE_EX}Reading all the files" + "\n")
         files = load_files(path_dir)
-        for _ in tqdm(range(len(files) * 10000), desc="reading all files"):
+        for file in tqdm(load_files(path_dir), desc="reading all files"):
+
             continue
         print("\n" + f"🔍​ {len(files)} files found" + "\n")
 
     except (PermissionError, IndexError) as e:
         print(e)
         exit()
+
+    all_chunks: list =
+
+
+
+
+
+
+
+
+
+    all_chunks = []
+    for file_path, content in tqdm(files, desc="Chunking"):
+        chunks = chunk_choice(file_path, content, max_chunk_size)
+        all_chunks.extend(chunks)
+
+    print(f"     {len(all_chunks)}: Total number of chunks created")
+
+    # BM25 tokenise les textes
+    # on va chercher le 4eme élément du tuple qui correspond au contenu texte
+    # stopwords="en" -> ignore mots fréquents qui servent à r (the, a, is...)
+    chunks_text = [chunk[3] for chunk in all_chunks]
+    print("\n🖥️​ Corpus tokenization...")
+    tokenized_text = bm25s.tokenize(chunks_text, stopwords="en",
+                                    show_progress=False)
+
+    # Construction index BM25 sur texte tokenisé et nettoyé
+    print("\n📚 Construction of the BM25 Index...")
+    retriever = bm25s.BM25()
+    retriever.index(tokenized_text, show_progress=False)
+
+    # sauvegarde de l'index BM25 sur disque (pour pouvoir le recharger sans
+    # recalculer)
+    retriever.save(BM25_PATH)
+    print(f"     💾 BM25 index saved in {BM25_PATH}")
+
+    # on sauvegarde les métadonnées des chunks séparément (file_path +
+    # position). Pas besoin de stocker
+    chunk_metadata = [(fp, start, end) for (fp, start, end, _) in all_chunks]
+    try:
+        with open(CHUNKS_PATH, "wb") as f:
+            pickle.dump(chunk_metadata, f)
+        print(f"     💾 Metadata chunks saved in {CHUNKS_PATH}")
+    except pickle.PicklingError:
+        print("Unable to serialize the chunk metadata.")
+        sys.exit()
+    except FileNotFoundError:
+        print(f"The destination folder for {CHUNKS_PATH} does "
+              "not exist.")
+        sys.exit()
+
+    print("\n" + "Ingestion complete! The indexes have been saved to "
+          "the data/processed/directory".center(80, " ") + "\n")
