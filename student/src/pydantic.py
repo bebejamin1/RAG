@@ -93,12 +93,12 @@ class MinimalSearchResults(BaseModel):
 
     Attributes:
         question_id: Unique identifier of the queried question.
-        question_str: The question text used for retrieval.
+        question: The question text used for retrieval.
         retrieved_sources: Ordered list of source excerpts retrieved.
     """
 
     question_id: str
-    question_str: str
+    question: str
     retrieved_sources: List[MinimalSource]
 
 
@@ -110,7 +110,7 @@ class MinimalAnswer(MinimalSearchResults):
     """Represent retrieval results augmented with a generated answer.
 
     Inherits:
-        MinimalSearchResults: Provides question_id, question_str, and
+        MinimalSearchResults: Provides question_id, question, and
             retrieved_sources fields.
 
     Attributes:
