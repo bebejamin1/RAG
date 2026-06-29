@@ -7,7 +7,7 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/06/19 11:28:05 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/06/29 09:19:40 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/06/29 10:38:39 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
@@ -45,17 +45,19 @@ def load_index() -> Tuple[bm25s.BM25, List[Tuple[str, int, int]]]:
     Raises:
         SystemExit: If the index or metadata files are missing.
     """
+
     try:
         if (not os.path.exists(BM25_PATH)):
             raise FileNotFoundError(
                 "BM25 index not found. Run:\n"
                 "  uv run python -m student index"
-            )
+                                   )
+
         if (not os.path.exists(CHUNKS_PATH)):
             raise FileNotFoundError(
                 "Chunk metadata not found. Run:\n"
                 "  uv run python -m student index"
-            )
+                                   )
 
         retriever = bm25s.BM25.load(BM25_PATH, load_corpus=False)
         with open(CHUNKS_PATH, "rb") as f:
@@ -111,7 +113,7 @@ def load_files(path_dir: str) -> List[Tuple[str, str]]:
             print(f"[WARN] Skipping {path}: {e}")
             continue
 
-    return files
+    return (files)
 
 
 # *****************************************************************************
@@ -120,7 +122,7 @@ def load_files(path_dir: str) -> List[Tuple[str, str]]:
 
 def search(
     query: str, k: int
-) -> List[Tuple[str, int, int]]:
+          ) -> List[Tuple[str, int, int]]:
     """Retrieve the top-k most relevant chunks for a query.
 
     Args:
@@ -139,12 +141,13 @@ def search(
 
     tokenized_query = bm25s.tokenize(
         [query], stopwords="en", show_progress=False
-    )
+                                    )
 
     n = min(k, len(chunk_metadata))
     results, _ = retriever.retrieve(tokenized_query, k=n)
 
     indices = results[0].tolist()
+
     return [chunk_metadata[i] for i in indices]
 
 
