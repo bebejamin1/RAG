@@ -7,7 +7,7 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/06/19 11:28:05 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/06/29 13:21:55 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/06/29 14:13:06 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
@@ -203,7 +203,35 @@ def index_main(path_dir: str, max_chunk_size: int) -> None:
     chunks_text = [chunk[3] for chunk in all_chunks]
     tokenized_text = bm25s.tokenize(
         chunks_text, stopwords="en", show_progress=False
-    )
+                                   )
+
+    valid_indices = [i for i, ids in enumerate(tokenized_text.ids)
+                     if len(ids) > 0]
+
+    if not valid_indices:
+        tokenized_text = bm25s.tokenize(
+            chunks_text,
+            stopwords=None,
+            token_pattern=r"(?u)\b\w+\b",
+            show_progress=False,
+                                       )
+        valid_indices = [i for i, ids in enumerate(tokenized_text.ids)
+                         if len(ids) > 0]
+        if len(valid_indices) < len(all_chunks):
+            all_chunks = [all_chunks[i] for i in valid_indices]
+            chunks_text = [chunk[3] for chunk in all_chunks]
+            tokenized_text = bm25s.tokenize(
+                chunks_text,
+                stopwords=None,
+                token_pattern=r"(?u)\b\w+\b",
+                show_progress=False,
+                                           )
+    elif len(valid_indices) < len(all_chunks):
+        all_chunks = [all_chunks[i] for i in valid_indices]
+        chunks_text = [chunk[3] for chunk in all_chunks]
+        tokenized_text = bm25s.tokenize(
+            chunks_text, stopwords="en", show_progress=False
+                                       )
 
     print(f"  {c.Fore.CYAN}Building BM25 index...{c.Style.RESET_ALL}")
     retriever = bm25s.BM25()
@@ -215,7 +243,7 @@ def index_main(path_dir: str, max_chunk_size: int) -> None:
 
     chunk_metadata = [
         (fp, start, end) for (fp, start, end, _) in all_chunks
-    ]
+                     ]
     try:
         with open(CHUNKS_PATH, "wb") as f:
             pickle.dump(chunk_metadata, f)

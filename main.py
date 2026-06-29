@@ -7,7 +7,7 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/06/19 13:18:12 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/06/29 13:19:11 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/06/29 14:16:51 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
@@ -48,14 +48,19 @@ class RagSystem():
             repo_path: Path to the repository to index.
             max_chunk_size: Maximum characters per chunk (default 2000).
         """
-        os.system("clear")
-        print("\n" + c.Fore.CYAN + "".center(79, "="))
-        print(" INDEXING ".center(79, "="))
-        print("".center(79, "=") + self.ra + "\n\n")
-
         try:
+
+            os.system("clear")
+
+            if (max_chunk_size > 2000):
+                raise ValueError("Chunk sizes must be less than 2000")
+
+            print("\n" + c.Fore.CYAN + "".center(79, "="))
+            print(" INDEXING ".center(79, "="))
+            print("".center(79, "=") + self.ra + "\n\n")
+
             index_main(repo_path, max_chunk_size)
-        except Exception as e:
+        except (Exception, ValueError) as e:
             print(f"{self.r}[ERROR]{self.rs}: {e}")
             exit(1)
 
