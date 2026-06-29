@@ -47,8 +47,8 @@ dspy, langchain, chromadb
 - [X] CLI : `uv run python -m src index --max_chunk_size 2000`
 
 ### Retrieval System
-- [X] Implémenter **BM25** ou **TF-IDF** (au moins un des deux)
-- [X] Retourner les top-k résultats avec `file_path`, `first_character_index`, `last_character_index`
+- [] Implémenter **BM25** ou **TF-IDF** (au moins un des deux)
+- [] Retourner les top-k résultats avec `file_path`, `first_character_index`, `last_character_index`
 - [ ] CLI : `uv run python -m src search "query" --k 10`
 - [ ] CLI : `uv run python -m src search_dataset --dataset_path <path> --k 10 --save_directory <dir>`
 - [ ] Output JSON valide conforme à `StudentSearchResults`

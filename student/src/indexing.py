@@ -7,7 +7,7 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/06/19 11:28:05 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/06/29 14:13:06 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/06/29 15:52:57 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
@@ -173,10 +173,10 @@ def index_main(path_dir: str, max_chunk_size: int) -> None:
         os.makedirs(BM25_PATH, exist_ok=True)
         os.makedirs(os.path.dirname(CHUNKS_PATH), exist_ok=True)
 
-        print(f"  {c.Fore.CYAN}Reading files from: {path_dir}"
+        print(f"  {c.Fore.LIGHTBLUE_EX}Reading files from: {path_dir}"
               f"{c.Style.RESET_ALL}\n")
         files = load_files(path_dir)
-        print(f"  Found {c.Fore.CYAN}{len(files)}{c.Style.RESET_ALL} "
+        print(f"  Found {c.Fore.YELLOW}{len(files)}{c.Style.RESET_ALL} "
               "indexable files.\n")
 
         if (not files):
@@ -192,11 +192,11 @@ def index_main(path_dir: str, max_chunk_size: int) -> None:
 
     all_chunks = []
     for file_path, content in tqdm(files, desc="Chunking files",
-                                   colour="cyan"):
+                                   colour="blue"):
         chunks = chunker(file_path, content, max_chunk_size)
         all_chunks.extend(chunks)
 
-    print(f"\n  Created {c.Fore.CYAN}{len(all_chunks)}{c.Style.RESET_ALL}"
+    print(f"\n  Created {c.Fore.YELLOW}{len(all_chunks)}{c.Style.RESET_ALL}"
           " total chunks.\n")
 
     print(f"  {c.Fore.CYAN}Tokenising corpus...{c.Style.RESET_ALL}")
@@ -204,34 +204,6 @@ def index_main(path_dir: str, max_chunk_size: int) -> None:
     tokenized_text = bm25s.tokenize(
         chunks_text, stopwords="en", show_progress=False
                                    )
-
-    valid_indices = [i for i, ids in enumerate(tokenized_text.ids)
-                     if len(ids) > 0]
-
-    if not valid_indices:
-        tokenized_text = bm25s.tokenize(
-            chunks_text,
-            stopwords=None,
-            token_pattern=r"(?u)\b\w+\b",
-            show_progress=False,
-                                       )
-        valid_indices = [i for i, ids in enumerate(tokenized_text.ids)
-                         if len(ids) > 0]
-        if len(valid_indices) < len(all_chunks):
-            all_chunks = [all_chunks[i] for i in valid_indices]
-            chunks_text = [chunk[3] for chunk in all_chunks]
-            tokenized_text = bm25s.tokenize(
-                chunks_text,
-                stopwords=None,
-                token_pattern=r"(?u)\b\w+\b",
-                show_progress=False,
-                                           )
-    elif len(valid_indices) < len(all_chunks):
-        all_chunks = [all_chunks[i] for i in valid_indices]
-        chunks_text = [chunk[3] for chunk in all_chunks]
-        tokenized_text = bm25s.tokenize(
-            chunks_text, stopwords="en", show_progress=False
-                                       )
 
     print(f"  {c.Fore.CYAN}Building BM25 index...{c.Style.RESET_ALL}")
     retriever = bm25s.BM25()

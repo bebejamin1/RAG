@@ -7,7 +7,7 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/06/19 13:18:12 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/06/29 14:16:51 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/06/29 15:58:03 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
@@ -52,8 +52,9 @@ class RagSystem():
 
             os.system("clear")
 
-            if (max_chunk_size > 2000):
-                raise ValueError("Chunk sizes must be less than 2000")
+            if (max_chunk_size > 2000 or max_chunk_size <= 1):
+                raise ValueError("The block size must be less than 2000 "
+                                 "and greater than 2")
 
             print("\n" + c.Fore.CYAN + "".center(79, "="))
             print(" INDEXING ".center(79, "="))
