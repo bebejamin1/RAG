@@ -7,7 +7,7 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/06/19 11:28:05 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/06/29 11:07:21 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/06/29 11:27:01 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
@@ -180,14 +180,18 @@ def index_main(path_dir: str, max_chunk_size: int) -> None:
               "indexable files.\n")
 
         if (not files):
+            path_vllm = path_dir[:path_dir.find("/vllm-0.10.1")]
+            os.makedirs(path_vllm)
             raise ValueError(
                 f"No indexable files found in: {path_dir}\n"
-                "Check that the path exists and contains "
-                ".py/.md/.rst/.txt files."
+                f"Add the unzipped vllm-0.10.1 file to the {path_vllm} folder"
                             )
 
+        if (not path_dir):
+            print("gegegeg")  # JE SUIS ICI
+
     except (PermissionError, OSError) as e:
-        print(f"[ERROR] Failed to read files: {e}")
+        raise ValueError(f"Failed to read files: {e}")
         exit(1)
 
     all_chunks = []
