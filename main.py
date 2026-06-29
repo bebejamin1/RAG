@@ -7,7 +7,7 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/06/19 13:18:12 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/06/29 00:00:00 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/06/29 11:08:53 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
@@ -23,7 +23,7 @@ from student.src.pydantic import (
     StudentSearchResults,
     UnansweredQuestion,
     RagDataset,
-)
+                                 )
 
 
 # *****************************************************************************

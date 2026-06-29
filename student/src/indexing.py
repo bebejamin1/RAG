@@ -7,7 +7,7 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/06/19 11:28:05 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/06/29 10:38:39 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/06/29 11:07:21 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
@@ -15,6 +15,7 @@ import os
 import bm25s
 import pickle
 import colorama as c
+import time
 
 from tqdm import tqdm
 from pathlib import Path
@@ -166,6 +167,9 @@ def index_main(path_dir: str, max_chunk_size: int) -> None:
         max_chunk_size: Maximum characters per chunk.
     """
     try:
+
+        start_time = time.perf_counter()
+
         os.makedirs(BM25_PATH, exist_ok=True)
         os.makedirs(os.path.dirname(CHUNKS_PATH), exist_ok=True)
 
@@ -174,6 +178,13 @@ def index_main(path_dir: str, max_chunk_size: int) -> None:
         files = load_files(path_dir)
         print(f"  Found {c.Fore.YELLOW}{len(files)}{c.Style.RESET_ALL} "
               "indexable files.\n")
+
+        if (not files):
+            raise ValueError(
+                f"No indexable files found in: {path_dir}\n"
+                "Check that the path exists and contains "
+                ".py/.md/.rst/.txt files."
+                            )
 
     except (PermissionError, OSError) as e:
         print(f"[ERROR] Failed to read files: {e}")
@@ -198,7 +209,8 @@ def index_main(path_dir: str, max_chunk_size: int) -> None:
     retriever.index(tokenized_text, show_progress=False)
 
     retriever.save(BM25_PATH)
-    print(f"  Saved BM25 index  → {c.Fore.GREEN}{BM25_PATH}{c.Style.RESET_ALL}")
+    print("\n" + "  Saved BM25 index  → "
+          f"{c.Fore.GREEN}{BM25_PATH}{c.Style.RESET_ALL}")
 
     chunk_metadata = [
         (fp, start, end) for (fp, start, end, _) in all_chunks
@@ -212,4 +224,8 @@ def index_main(path_dir: str, max_chunk_size: int) -> None:
         print(f"[ERROR] Could not save chunk metadata: {e}")
         exit(1)
 
-    print(c.Fore.CYAN + "  Indexing complete!".center(79) + c.Style.RESET_ALL)
+    end_time = time.perf_counter()
+    execution_time = end_time - start_time
+
+    print(c.Fore.CYAN + "  Indexing complete!".center(79) + c.Style.RESET_ALL,
+          "\n" + f"{execution_time: .2f}s".center(79))

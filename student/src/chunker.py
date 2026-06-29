@@ -7,7 +7,7 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/06/22 14:51:11 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/06/29 10:37:29 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/06/29 11:13:03 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
@@ -20,6 +20,10 @@ Chunk = Tuple[str, int, int, str]
 
 INDEXABLE_EXTENSIONS = {'.py', '.md', '.rst', '.txt'}
 
+
+# *****************************************************************************
+# *                         GET LINE OFFSETS                                  *
+# *                                                                           *
 
 def _get_line_offsets(content: str) -> List[int]:
     """Return the character offset of the start of each line.
@@ -36,6 +40,10 @@ def _get_line_offsets(content: str) -> List[int]:
 
     return (offsets)
 
+
+# *****************************************************************************
+# *                           SPLIT BY SIZE                                   *
+# *                                                                           *
 
 def _split_by_size(
     file_path: str,
@@ -58,7 +66,7 @@ def _split_by_size(
     """
     chunks: List[Chunk] = []
     i = start
-    while i < end:
+    while (i < end):
         chunk_end = min(i + max_size, end)
         text = content[i:chunk_end]
 
@@ -68,6 +76,10 @@ def _split_by_size(
 
     return (chunks)
 
+
+# *****************************************************************************
+# *                           CHUNK PYTHON                                    *
+# *                                                                           *
 
 def chunk_python(
     file_path: str, content: str, max_size: int
@@ -155,6 +167,10 @@ def chunk_python(
     return (chunks if chunks else chunk_text(file_path, content, max_size))
 
 
+# *****************************************************************************
+# *                            CHUNK TEXT                                     *
+# *                                                                           *
+
 def chunk_text(
     file_path: str, content: str, max_size: int
               ) -> List[Chunk]:
@@ -226,6 +242,10 @@ def chunk_text(
     return (chunks)
 
 
+# *****************************************************************************
+# *                          IS INDEXABLE                                     *
+# *                                                                           *
+
 def is_indexable(file_path: str) -> bool:
     """Return True if the file extension is worth indexing.
 
@@ -243,6 +263,10 @@ def is_indexable(file_path: str) -> bool:
 
     return (ext in INDEXABLE_EXTENSIONS)
 
+
+# *****************************************************************************
+# *                             CHUNKER                                       *
+# *                                                                           *
 
 def chunker(
     file_path: str, content: str, max_size: int

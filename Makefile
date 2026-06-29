@@ -6,7 +6,7 @@
 #    By: bbeaurai <bbeaurai@student.42lehavre.fr    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/26 11:22:22 by bbeaurai          #+#    #+#              #
-#    Updated: 2026/06/26 11:23:31 by bbeaurai         ###   ########.fr        #
+#    Updated: 2026/06/29 11:14:31 by bbeaurai         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -87,7 +87,6 @@ index : check-venv
 	@echo ""
 	@echo "$(YELLOW)INDEXATION EN COURS...$(NC)"
 	@$(UV) index --repo_path=$(REPO)
-	@echo "$(GREEN)INDEX OK$(NC)"
 
 # make search Q="What is vLLM ?"
 search : check-venv
@@ -108,7 +107,6 @@ search_dataset : check-venv
 	@echo "$(YELLOW)SEARCH DATASET : $(DATASET)$(NC)"
 	@$(UV) search_dataset --dataset_path=$(DATASET) --k=$(K) \
 		--save_directory=$(SEARCH_OUT)
-	@echo "$(GREEN)SEARCH DATASET OK$(NC)"
 
 answer_dataset : check-venv
 	@echo ""
@@ -116,7 +114,6 @@ answer_dataset : check-venv
 	@$(UV) answer_dataset \
 		--student_search_results_path=$(SEARCH_OUT)/$(notdir $(DATASET)) \
 		--save_directory=$(ANSWER_OUT)
-	@echo "$(GREEN)ANSWER DATASET OK$(NC)"
 
 evaluate : check-venv
 	@echo ""

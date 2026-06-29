@@ -36,14 +36,14 @@ dspy, langchain, chromadb
 - [X] `StudentSearchResultsAndAnswer(StudentSearchResults)` — `search_results: List[MinimalAnswer]`
 
 ### Ingestion / Indexing
-- [ ] Lire tous les fichiers utiles du repo `vllm-0.10.1/` (`.py`, `.md`, `.rst`...)
-- [ ] Implémenter le chunking **Python** (par fonction/classe via AST)
-- [ ] Implémenter le chunking **Markdown/texte** (par section/paragraphe)
-- [ ] Taille max des chunks : **2000 caractères**, configurable via `--max_chunk_size`
-- [ ] Chaque chunk stocke : `file_path`, `first_character_index`, `last_character_index`
-- [ ] Construire l'index BM25 ou TF-IDF
-- [ ] Sauvegarder l'index dans `data/processed/` pour réutilisation
-- [ ] Temps d'indexing < **5 minutes**
+- [X] Lire tous les fichiers utiles du repo `vllm-0.10.1/` (`.py`, `.md`, `.rst`...)
+- [X] Implémenter le chunking **Python** (par fonction/classe via AST)
+- [X] Implémenter le chunking **Markdown/texte** (par section/paragraphe)
+- [X] Taille max des chunks : **2000 caractères**, configurable via `--max_chunk_size`
+- [X] Chaque chunk stocke : `file_path`, `first_character_index`, `last_character_index`
+- [X] Construire l'index BM25 ou TF-IDF
+- [X] Sauvegarder l'index dans `data/processed/` pour réutilisation
+- [X] Temps d'indexing < **5 minutes**
 - [ ] CLI : `uv run python -m src index --max_chunk_size 2000`
 
 ### Retrieval System
