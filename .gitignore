@@ -1,6 +1,7 @@
 # for my project
 data
 datasets_public
+datasets_private
 moulinette
 vllm-0.10.1
 uv.lock
