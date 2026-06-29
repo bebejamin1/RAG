@@ -7,7 +7,7 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/06/22 14:51:11 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/06/29 00:00:00 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/06/29 09:23:20 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
@@ -33,7 +33,8 @@ def _get_line_offsets(content: str) -> List[int]:
     offsets: List[int] = [0]
     for line in content.split('\n')[:-1]:
         offsets.append(offsets[-1] + len(line) + 1)
-    return offsets
+
+    return (offsets)
 
 
 def _split_by_size(
@@ -42,7 +43,7 @@ def _split_by_size(
     start: int,
     end: int,
     max_size: int,
-) -> List[Chunk]:
+                   ) -> List[Chunk]:
     """Split content[start:end] into chunks of at most max_size characters.
 
     Args:
@@ -91,13 +92,13 @@ def chunk_python(
     def char_range(node: ast.AST) -> Tuple[int, int]:
         """Convert AST node line positions to character indices."""
         # Include decorators if present
-        if hasattr(node, 'decorator_list') and node.decorator_list:  # type: ignore[union-attr]
-            first_line = node.decorator_list[0].lineno  # type: ignore[union-attr]
+        if hasattr(node, 'decorator_list') and node.decorator_list:
+            first_line = node.decorator_list[0].lineno
         else:
-            first_line = node.lineno  # type: ignore[union-attr]
+            first_line = node.lineno
         start = offsets[first_line - 1]
-        end_line = node.end_lineno  # type: ignore[union-attr]
-        end_col = node.end_col_offset  # type: ignore[union-attr]
+        end_line = node.end_lineno
+        end_col = node.end_col_offset
         end = offsets[end_line - 1] + end_col
         return start, end
 

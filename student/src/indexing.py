@@ -7,7 +7,7 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/06/19 11:28:05 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/06/29 00:00:00 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/06/29 09:19:40 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
@@ -46,12 +46,12 @@ def load_index() -> Tuple[bm25s.BM25, List[Tuple[str, int, int]]]:
         SystemExit: If the index or metadata files are missing.
     """
     try:
-        if not os.path.exists(BM25_PATH):
+        if (not os.path.exists(BM25_PATH)):
             raise FileNotFoundError(
                 "BM25 index not found. Run:\n"
                 "  uv run python -m student index"
             )
-        if not os.path.exists(CHUNKS_PATH):
+        if (not os.path.exists(CHUNKS_PATH)):
             raise FileNotFoundError(
                 "Chunk metadata not found. Run:\n"
                 "  uv run python -m student index"
@@ -65,7 +65,7 @@ def load_index() -> Tuple[bm25s.BM25, List[Tuple[str, int, int]]]:
         print(e)
         exit(1)
 
-    return retriever, chunk_metadata
+    return (retriever, chunk_metadata)
 
 
 # *****************************************************************************
@@ -86,14 +86,14 @@ def load_files(path_dir: str) -> List[Tuple[str, str]]:
     files = []
 
     for path in Path(path_dir).rglob("*"):
-        if not path.is_file():
+        if (not path.is_file()):
             continue
 
-        if any(part.startswith(".") or part in IGNORED_DIRS
-               for part in path.parts):
+        if (any(part.startswith(".") or part in IGNORED_DIRS
+                for part in path.parts)):
             continue
 
-        if not is_indexable(str(path)):
+        if (not is_indexable(str(path))):
             continue
 
         try:
@@ -132,7 +132,7 @@ def search(
         tuples, ordered by BM25 relevance score descending.
         Returns an empty list if the query is empty or k is 0.
     """
-    if not query or k <= 0:
+    if (not query or k <= 0):
         return []
 
     retriever, chunk_metadata = load_index()
