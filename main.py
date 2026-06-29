@@ -7,7 +7,7 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/06/19 13:18:12 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/06/29 11:08:53 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/06/29 13:19:11 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
@@ -68,20 +68,25 @@ class RagSystem():
             query: The search query.
             k: Number of results to return (default 5).
         """
+        os.system("clear")
+        print("\n" + c.Fore.CYAN + "".center(79, "="))
+        print(" INDEXING ".center(79, "="))
+        print("".center(79, "=") + self.ra + "\n\n")
+
         results = _search(query, k)
         sources = [
             MinimalSource(
                 file_path=fp,
                 first_character_index=start,
                 last_character_index=end,
-            )
+                         )
             for fp, start, end in results
-        ]
+                  ]
         output = MinimalSearchResults(
             question_id="cli_query",
             question=query,
             retrieved_sources=sources,
-        )
+                                     )
         print(json.dumps(output.model_dump(), indent=2))
 
 # ============================ SEARCH_DATASET =================================
@@ -91,7 +96,7 @@ class RagSystem():
         dataset_path: str,
         k: int = 5,
         output_path: str = "",
-    ) -> None:
+                      ) -> None:
         """Run search for every question in a dataset file and output JSON.
 
         Args:
@@ -111,21 +116,23 @@ class RagSystem():
         for item in dataset.rag_questions:
             q = UnansweredQuestion.model_validate(item.model_dump())
             results = _search(q.question, k)
+
             sources = [
                 MinimalSource(
                     file_path=fp,
                     first_character_index=start,
                     last_character_index=end,
-                )
+                             )
                 for fp, start, end in results
-            ]
+                      ]
+
             all_results.append(
                 MinimalSearchResults(
                     question_id=q.question_id,
                     question=q.question,
                     retrieved_sources=sources,
-                )
-            )
+                                    )
+                              )
 
         output = StudentSearchResults(search_results=all_results, k=k)
         out_json = json.dumps(output.model_dump(), indent=2)
