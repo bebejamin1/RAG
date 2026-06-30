@@ -6,7 +6,7 @@
 #    By: bbeaurai <bbeaurai@student.42lehavre.fr    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/26 11:22:22 by bbeaurai          #+#    #+#              #
-#    Updated: 2026/06/29 11:14:31 by bbeaurai         ###   ########.fr        #
+#    Updated: 2026/06/30 14:57:10 by bbeaurai         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -84,23 +84,19 @@ help :
 # ── Pipeline RAG ────────────────────────────────────────────────────────── #
 
 index : check-venv
-	@echo ""
-	@echo "$(YELLOW)INDEXATION EN COURS...$(NC)"
 	@$(UV) index --repo_path=$(REPO)
 
 # make search Q="What is vLLM ?"
 search : check-venv
 	@QUERY="$(strip $(if $(Q),$(Q),$(RAW_SEARCH_QUERY)))"; \
-	echo ""; \
-	echo "$(BLUE)SEARCH : $$QUERY$(NC)"; \
-	$(UV) search --request="$$QUERY" --k=$(K)
+	$(UV) search --query="$$QUERY" --k=$(K)
 
 # make answer Q="What is vLLM ?"
 answer : check-venv
 	@QUERY="$(strip $(if $(Q),$(Q),$(RAW_ANSWER_QUERY)))"; \
 	echo ""; \
 	echo "$(BLUE)ANSWER : $$QUERY$(NC)"; \
-	$(UV) answer --request="$$QUERY" --k=$(K)
+	$(UV) answer --query="$$QUERY" --k=$(K)
 
 search_dataset : check-venv
 	@echo ""

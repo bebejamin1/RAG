@@ -7,7 +7,7 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/06/19 11:28:05 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/06/29 15:52:57 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/06/30 14:40:26 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
@@ -173,10 +173,10 @@ def index_main(path_dir: str, max_chunk_size: int) -> None:
         os.makedirs(BM25_PATH, exist_ok=True)
         os.makedirs(os.path.dirname(CHUNKS_PATH), exist_ok=True)
 
-        print(f"  {c.Fore.LIGHTBLUE_EX}Reading files from: {path_dir}"
+        print(f"  {c.Fore.CYAN}Reading files from: {path_dir}"
               f"{c.Style.RESET_ALL}\n")
         files = load_files(path_dir)
-        print(f"  Found {c.Fore.YELLOW}{len(files)}{c.Style.RESET_ALL} "
+        print(f"  Found {c.Fore.CYAN}{len(files)}{c.Style.RESET_ALL} "
               "indexable files.\n")
 
         if (not files):
@@ -192,11 +192,11 @@ def index_main(path_dir: str, max_chunk_size: int) -> None:
 
     all_chunks = []
     for file_path, content in tqdm(files, desc="Chunking files",
-                                   colour="blue"):
+                                   colour="CYAN"):
         chunks = chunker(file_path, content, max_chunk_size)
         all_chunks.extend(chunks)
 
-    print(f"\n  Created {c.Fore.YELLOW}{len(all_chunks)}{c.Style.RESET_ALL}"
+    print(f"\n  Created {c.Fore.CYAN}{len(all_chunks)}{c.Style.RESET_ALL}"
           " total chunks.\n")
 
     print(f"  {c.Fore.CYAN}Tokenising corpus...{c.Style.RESET_ALL}")
@@ -228,5 +228,5 @@ def index_main(path_dir: str, max_chunk_size: int) -> None:
     end_time = time.perf_counter()
     execution_time = end_time - start_time
 
-    print(c.Fore.CYAN + "  Indexing complete!".center(79) + c.Style.RESET_ALL,
+    print(c.Fore.CYAN + " Indexing complete! ".center(79) + c.Style.RESET_ALL,
           "\n" + f"{execution_time: .2f}s".center(79))

@@ -7,7 +7,7 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/06/19 13:18:12 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/06/29 15:58:03 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/06/30 14:55:05 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
@@ -15,8 +15,9 @@ import json
 import colorama as c
 import os
 import fire
+import time
 
-from student.src.indexing import _PROJECT_ROOT, index_main, search as _search
+from student.src.indexing import _PROJECT_ROOT, index_main, search
 from student.src.pydantic import (
     MinimalSource,
     MinimalSearchResults,
@@ -48,6 +49,7 @@ class RagSystem():
             repo_path: Path to the repository to index.
             max_chunk_size: Maximum characters per chunk (default 2000).
         """
+
         try:
 
             os.system("clear")
@@ -61,9 +63,10 @@ class RagSystem():
             print("".center(79, "=") + self.ra + "\n\n")
 
             index_main(repo_path, max_chunk_size)
+
         except (Exception, ValueError) as e:
             print(f"{self.r}[ERROR]{self.rs}: {e}")
-            exit(1)
+            exit()
 
 # ============================ SEARCH =========================================
 
@@ -74,26 +77,62 @@ class RagSystem():
             query: The search query.
             k: Number of results to return (default 5).
         """
+
+        if (k <= 0):
+            print("k cannot be less than or equal to 0")
+            exit()
+
+        if not query or not query.strip():
+            print("\n" + f"{self.r}[ERROR]{self.rs}:"
+                  " the request cannot be empty")
+            exit()
+
+        start_time = time.perf_counter()
+
         os.system("clear")
-        print("\n" + c.Fore.CYAN + "".center(79, "="))
-        print(" INDEXING ".center(79, "="))
+        print("\n" + c.Fore.YELLOW + "".center(79, "="))
+        print(" SEARCH ".center(79, "="))
         print("".center(79, "=") + self.ra + "\n\n")
 
-        results = _search(query, k)
+        try:
+            raw = search(query, k)
+        except FileNotFoundError as e:
+            print(f"{self.r}[ERROR]{self.rs}: {e}")
+            exit()
+
         sources = [
             MinimalSource(
                 file_path=fp,
                 first_character_index=start,
                 last_character_index=end,
-                         )
-            for fp, start, end in results
-                  ]
-        output = MinimalSearchResults(
-            question_id="cli_query",
+            )
+            for fp, start, end in raw
+        ]
+
+        result = MinimalSearchResults(
+            question_id="single-query",
             question=query,
-            retrieved_sources=sources,
-                                     )
-        print(json.dumps(output.model_dump(), indent=2))
+            retrieved_sources=sources)
+
+        data = result.model_dump()
+
+        print(c.Fore.YELLOW + "Question ID : " + self.ra +
+              data["question_id"])
+        print(c.Fore.YELLOW + "Question    : " + self.ra + data["question"])
+        print(c.Fore.YELLOW + "Sources     : " + self.ra +
+              f"{len(data['retrieved_sources'])} result(s)\n")
+
+        for i, src in enumerate(data["retrieved_sources"], 1):
+            print(c.Fore.YELLOW + f"[{i}]" + self.ra,
+                  src["file_path"].strip())
+            print(c.Fore.YELLOW + "chars" + self.ra,
+                  f"{src['first_character_index']} → "
+                  f"{src['last_character_index']}\n")
+
+        end_time = time.perf_counter()
+        execution_time = end_time - start_time
+        print(c.Fore.YELLOW + " Search complete! ".center(79) + self.ra)
+        print(f"{execution_time: .2f}s".center(79) + "\n")
 
 # ============================ SEARCH_DATASET =================================
 
@@ -110,18 +149,23 @@ class RagSystem():
             k: Number of results per question (default 5).
             output_path: Optional path to write output JSON (prints if empty).
         """
+
+        if (k <= 0):
+            print("k cannot be less than or equal to 0")
+            exit()
+
         try:
             with open(dataset_path, "r") as f:
                 raw = json.load(f)
             dataset = RagDataset.model_validate(raw)
         except Exception as e:
             print(f"{self.r}[ERROR]{self.rs}: Could not load dataset: {e}")
-            exit(1)
+            exit()
 
         all_results = []
         for item in dataset.rag_questions:
             q = UnansweredQuestion.model_validate(item.model_dump())
-            results = _search(q.question, k)
+            results = search(q.question, k)
 
             sources = [
                 MinimalSource(
