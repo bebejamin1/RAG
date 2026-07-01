@@ -7,7 +7,7 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/06/19 13:18:12 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/06/30 14:55:05 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/07/01 09:15:04 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
@@ -17,9 +17,11 @@ import os
 import fire
 import time
 
-from student.src.indexing import _PROJECT_ROOT, index_main, search
+from student.src.indexing import _PROJECT_ROOT, index_main, search, load_index
+from student.src.llm import gen_answer
 from student.src.pydantic import (
     MinimalSource,
+    MinimalAnswer,
     MinimalSearchResults,
     StudentSearchResults,
     UnansweredQuestion,
@@ -133,6 +135,33 @@ class RagSystem():
         execution_time = end_time - start_time
         print(c.Fore.YELLOW + " Search complete! ".center(79) + self.ra)
         print(f"{execution_time: .2f}s".center(79) + "\n")
+
+# =============================== ANSWER ======================================
+
+    def answer(self, query: str, k: int = 5) -> None:
+
+        if (not query or not query.strip()):
+            print("\n" + f"{self.r}[ERROR]{self.rs}:"
+                  "the request cannot be empty")
+            exit()
+
+        try:
+            retriever, chunk_metadata = load_index()
+        except PermissionError as e:
+            print(f"{self.r}[ERROR]{self.rs}: {e}")
+            exit()
+
+        sources: list[MinimalSource] = search(  # type: ignore[assignment]
+            query, retriever, chunk_metadata, k=k)
+
+        answer_text = gen_answer(query, sources)
+
+        result = MinimalAnswer(question_id="single-query",
+                               question_str=query,
+                               retrieved_sources=sources,
+                               answer=answer_text)
+
+        print(result.model_dump_json(indent=2))
 
 # ============================ SEARCH_DATASET =================================
 
