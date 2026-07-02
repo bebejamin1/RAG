@@ -7,7 +7,7 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/06/19 09:07:23 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/06/26 11:02:40 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/07/02 15:54:09 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
@@ -98,7 +98,7 @@ class MinimalSearchResults(BaseModel):
     """
 
     question_id: str
-    question: str
+    question_str: str
     retrieved_sources: List[MinimalSource]
 
 

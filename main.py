@@ -7,7 +7,7 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/06/19 13:18:12 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/07/02 14:32:29 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/07/02 16:01:13 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
@@ -108,14 +108,15 @@ class RagSystem():
 
         result = MinimalSearchResults(
             question_id="single-query",
-            question=query,
+            question_str=query,
             retrieved_sources=sources)
 
         data = result.model_dump()
 
         print(c.Fore.YELLOW + "Question ID : " + self.ra +
               data["question_id"])
-        print(c.Fore.YELLOW + "Question    : " + self.ra + data["question"])
+        print(c.Fore.YELLOW + "Question    : " + self.ra +
+              data["question_str"])
         print(c.Fore.YELLOW + "Sources     : " + self.ra +
               f"{len(data['retrieved_sources'])} result(s)\n")
 
@@ -165,7 +166,7 @@ class RagSystem():
         ]
 
         result = MinimalAnswer(question_id="single-query",  # noqa
-                               question=query,
+                               question_str=query,
                                retrieved_sources=minimal_sources,
                                answer=answer_text)
 
@@ -214,7 +215,7 @@ class RagSystem():
             all_results.append(
                 MinimalSearchResults(
                     question_id=q.question_id,
-                    question=q.question,
+                    question_str=q.question,
                     retrieved_sources=sources,
                                     )
                               )
@@ -223,11 +224,9 @@ class RagSystem():
         out_json = json.dumps(output.model_dump(), indent=2)
 
         if output_path:
+            os.makedirs(os.path.dirname(output_path), exist_ok=True)
             with open(output_path, "w") as f:
                 f.write(out_json)
-            print(f"Results written to {output_path}")
-        else:
-            print(out_json)
 
 
 # *****************************************************************************

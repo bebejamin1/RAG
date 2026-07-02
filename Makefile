@@ -6,7 +6,7 @@
 #    By: bbeaurai <bbeaurai@student.42lehavre.fr    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/26 11:22:22 by bbeaurai          #+#    #+#              #
-#    Updated: 2026/07/02 12:03:07 by bbeaurai         ###   ########.fr        #
+#    Updated: 2026/07/02 16:05:24 by bbeaurai         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -100,7 +100,7 @@ answer : check-venv
 search_dataset : check-venv
 	@echo ""
 	@$(UV) search_dataset --dataset_path=$(DATASET) --k=$(K) \
-		--save_directory=$(SEARCH_OUT)
+		--output_path=$(SEARCH_OUT)/$(notdir $(DATASET))
 
 answer_dataset : check-venv
 	@echo ""
