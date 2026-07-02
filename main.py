@@ -7,7 +7,7 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/06/19 13:18:12 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/07/01 15:40:06 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/07/02 14:32:29 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
@@ -17,7 +17,8 @@ import os
 import fire
 import time
 
-from student.src.indexing import _PROJECT_ROOT, index_main, search, load_index
+from student.src.indexing import _PROJECT_ROOT, index_main, load_index
+from student.src.retriever import search
 from student.src.llm import gen_answer
 from student.src.pydantic import (
     MinimalSource,
@@ -189,10 +190,17 @@ class RagSystem():
             print(f"{self.r}[ERROR]{self.rs}: Could not load dataset: {e}")
             exit()
 
+        try:
+            retriever, chunk_metadata = load_index()
+        except PermissionError as e:
+            print(f"{self.r}[ERROR]{self.rs}: {e}")
+            exit()
+
         all_results = []
         for item in dataset.rag_questions:
             q = UnansweredQuestion.model_validate(item.model_dump())
-            results = search(q.question, k)
+            results: list[MinimalSource] = search(  # type: ignore[assignment]
+                q.question, retriever, chunk_metadata, k=k)
 
             sources = [
                 MinimalSource(

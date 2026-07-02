@@ -7,7 +7,7 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/07/01 09:14:14 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/07/02 11:55:13 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/07/02 13:39:10 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
@@ -21,6 +21,10 @@ from typing import List, Optional, Any
 
 _cache_pipeline: Optional[Any] = None
 
+
+# *****************************************************************************
+# *                              LOAD LLM                                     *
+# *                                                                           *
 
 def load_llm() -> None:
     global _cache_pipeline
@@ -48,6 +52,10 @@ def read_source(src: MinimalSource) -> str:
     except ValueError:
         return ""
 
+
+# *****************************************************************************
+# *                           MAKE MESSAGE                                    *
+# *                                                                           *
 
 def make_message(query: str, sources: List[MinimalSource]) -> str:
     context = ""
@@ -93,6 +101,10 @@ def make_message(query: str, sources: List[MinimalSource]) -> str:
         },
            ]
 
+
+# *****************************************************************************
+# *                            GEN ANSWER                                     *
+# *                                                                           *
 
 def gen_answer(query: str, sources: List[MinimalSource]) -> str:
 

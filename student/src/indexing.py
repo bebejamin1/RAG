@@ -7,7 +7,7 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/06/19 11:28:05 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/07/02 11:29:33 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/07/02 14:03:05 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
@@ -19,8 +19,7 @@ import time
 
 from tqdm import tqdm
 from pathlib import Path
-from typing import Tuple, List, Union
-from student.src.pydantic import MinimalSource
+from typing import Tuple, List
 
 from student.src.chunker import chunker, is_indexable
 
@@ -102,29 +101,6 @@ def load_files(path_dir: str) -> List[Tuple[str, str]]:
 
 
 # *****************************************************************************
-# *                              SEARCH                                       *
-# *                                                                           *
-
-def search(query: Union[str, List[str]], retriever: bm25s.BM25,
-           chunk_metadata: List[Tuple[str, int, int]], k: int) -> Union[
-               List[MinimalSource], List[List[MinimalSource]]]:
-
-    if (not query or k <= 0):
-        return []
-
-    tokenized_query = bm25s.tokenize(
-        [query], stopwords="en", show_progress=False
-                                    )
-
-    n = min(k, len(chunk_metadata))
-    results, _ = retriever.retrieve(tokenized_query, k=n)
-
-    indices = results[0].tolist()
-
-    return [chunk_metadata[i] for i in indices]
-
-
-# *****************************************************************************
 # *                            INDEX MAIN                                     *
 # *                                                                           *
 
@@ -140,6 +116,7 @@ def index_main(path_dir: str, max_chunk_size: int) -> None:
         print(f"  {c.Fore.CYAN}Reading files from: {path_dir}"
               f"{c.Style.RESET_ALL}\n")
         files = load_files(path_dir)
+
         print(f"  Found {c.Fore.CYAN}{len(files)}{c.Style.RESET_ALL} "
               "indexable files.\n")
 
