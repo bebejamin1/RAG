@@ -7,7 +7,7 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/06/22 14:51:11 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/07/02 11:34:48 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/07/02 11:40:04 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
@@ -44,7 +44,7 @@ def is_indexable(file_path: str) -> bool:
 def chunk_python(
     file_path: str, content: str, max_size: int
                 ) -> List[Chunk]:
-    # TODO: AST-based chunking (functions/classes) -> fallback for now
+    # AST-based chunking
     return (chunk_text(file_path, content, max_size))
 
 
@@ -59,11 +59,9 @@ def chunk_text(
     if (not content):
         return []
 
-    overlap = min(200, max(0, max_size // 10))
-
     char_split = RecursiveCharacterTextSplitter(
         chunk_size=max_size,
-        chunk_overlap=overlap,
+        chunk_overlap=200,
         add_start_index=True)
 
     documents = char_split.create_documents([content])

@@ -184,3 +184,7 @@ chunk max 2000char
 AST Abstract Syntax Tree
 
 embedding
+
+
+revoir le retrivial
+faire un chunker pour python

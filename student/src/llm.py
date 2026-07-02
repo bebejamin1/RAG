@@ -7,7 +7,7 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/07/01 09:14:14 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/07/01 16:06:26 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/07/02 11:55:13 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
@@ -51,7 +51,7 @@ def read_source(src: MinimalSource) -> str:
 
 def make_message(query: str, sources: List[MinimalSource]) -> str:
     context = ""
-    limit = 3000
+    limit = 2000 * len(sources)
 
     for src in sources:
         chunk_text = read_source(src)
@@ -70,14 +70,26 @@ def make_message(query: str, sources: List[MinimalSource]) -> str:
         {
             "role": "system",
             "content": (
-                "You are a helpful assistant. "
-                "Answer the question using ONLY the provided context. "
-                "Be concise and mention the source file. /no_think"
+                "You are a precise technical assistant answering "
+                "questions about a codebase and its documentation. "
+                "Use ONLY the information given in the context to "
+                "answer the question directly, in 2 to 4 sentences. "
+                "Cover the key point(s) without listing every detail "
+                "from the context. "
+                "Never use prior knowledge, and never invent facts, "
+                "names, file paths, or details that are not explicitly "
+                "present in the context. "
+                "If the context does not answer the question, say so "
+                "clearly instead of guessing. "
+                "The answer must be self-contained and understandable "
+                "without seeing the question or the context again. "
+                "Do not mention sources, file names, or file paths. "
+                "/no_think"
                        ),
         },
         {
             "role": "user",
-            "content": f"Context:\n{context}" + "\n\n" + "Question: {query}",
+            "content": f"Context:\n{context}\n\nQuestion: {query}",
         },
            ]
 
@@ -90,7 +102,7 @@ def gen_answer(query: str, sources: List[MinimalSource]) -> str:
 
     message = make_message(query, sources)
 
-    gen_conf = GenerationConfig(max_new_tokens=256, do_sample=False,
+    gen_conf = GenerationConfig(max_new_tokens=512, do_sample=False,
                                 temperature=1.0, top_p=1.0, top_k=50)
     result = _cache_pipeline(  # type: ignore[misc]
         message, generation_config=gen_conf)

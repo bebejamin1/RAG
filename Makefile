@@ -6,7 +6,7 @@
 #    By: bbeaurai <bbeaurai@student.42lehavre.fr    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/26 11:22:22 by bbeaurai          #+#    #+#              #
-#    Updated: 2026/07/02 11:35:36 by bbeaurai         ###   ########.fr        #
+#    Updated: 2026/07/02 12:03:07 by bbeaurai         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -16,9 +16,9 @@ UV		= uv run python -m student.src
 RAW_SEARCH_QUERY	= $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
 RAW_ANSWER_QUERY	= $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
 
-# Dataset par défaut (peut être surchargé : make search_dataset DATASET=...)
+
 DATASET		= datasets_public/public/UnansweredQuestions/dataset_docs_public.json
-# Ground truth pour evaluate (AnsweredQuestions = corrigé)
+
 GT_DATASET	= datasets_public/public/AnsweredQuestions/dataset_docs_public.json
 SEARCH_OUT	= data/output/search_results
 ANSWER_OUT	= data/output/search_results_and_answer
