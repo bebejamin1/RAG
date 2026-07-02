@@ -6,7 +6,7 @@
 #    By: bbeaurai <bbeaurai@student.42lehavre.fr    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/26 11:22:22 by bbeaurai          #+#    #+#              #
-#    Updated: 2026/07/01 15:40:15 by bbeaurai         ###   ########.fr        #
+#    Updated: 2026/07/02 11:35:36 by bbeaurai         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -23,7 +23,7 @@ GT_DATASET	= datasets_public/public/AnsweredQuestions/dataset_docs_public.json
 SEARCH_OUT	= data/output/search_results
 ANSWER_OUT	= data/output/search_results_and_answer
 REPO		= data/raw/vllm-0.10.1
-K		= 5
+K		= 10
 
 RED		= \033[0;31m
 GREEN		= \033[0;32m
