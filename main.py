@@ -7,19 +7,20 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/06/19 13:18:12 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/07/02 16:01:13 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/07/03 12:22:41 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
-import json
 import colorama as c
+import json
 import os
 import fire
 import time
+from tqdm import tqdm
 
 from student.src.indexing import _PROJECT_ROOT, index_main, load_index
 from student.src.retriever import search
-from student.src.llm import gen_answer
+from student.src.llm import gen_answer, load_llm
 from student.src.pydantic import (
     MinimalSource,
     MinimalAnswer,
@@ -27,6 +28,7 @@ from student.src.pydantic import (
     StudentSearchResults,
     UnansweredQuestion,
     RagDataset,
+    StudentSearchResultsAndAnswer
                                  )
 
 
@@ -147,12 +149,18 @@ class RagSystem():
             print(f"{self.r}[ERROR]{self.rs}: {e}")
             exit()
 
+        start_time = time.perf_counter()
+
         print("\n" + c.Fore.MAGENTA + "".center(79, "="))
         print(" ANSWER ".center(79, "="))
         print("".center(79, "=") + self.ra + "\n\n")
 
         sources: list[MinimalSource] = search(  # type: ignore[assignment]
             query, retriever, chunk_metadata, k=k)
+
+        print("Loading model: " + c.Fore.MAGENTA + "Qwen/Qwen3-0.6B" + "\n" +
+              c.Fore.RESET)
+        load_llm()
 
         answer_text = gen_answer(query, sources)
 
@@ -165,10 +173,27 @@ class RagSystem():
             for fp, start, end in sources
         ]
 
-        result = MinimalAnswer(question_id="single-query",  # noqa
-                               question_str=query,
-                               retrieved_sources=minimal_sources,
-                               answer=answer_text)
+        _ = MinimalAnswer(question_id="single-query",
+                          question_str=query,
+                          retrieved_sources=minimal_sources,
+                          answer=answer_text)
+
+        print("\n" + c.Fore.MAGENTA + "Sources: " + c.Fore.RESET)
+        for i, s in enumerate(sources, 1):
+            print(c.Fore.MAGENTA + f"[{i}] " + c.Fore.RESET +
+                  f"{s[0]}" + "\n" +
+                  c.Fore.MAGENTA + "chars " + c.Fore.RESET +
+                  f"{s[1]} → {s[2]}" + "\n")
+
+        print("\n" + c.Fore.MAGENTA + "Question: " + c.Fore.RESET + query)
+        print("\n" + c.Fore.MAGENTA + "Answer:"
+              + c.Fore.RESET + "\n" + answer_text)
+
+        end_time = time.perf_counter()
+        execution_time = end_time - start_time
+
+        print(c.Fore.MAGENTA + " Search complete! ".center(79) + self.ra)
+        print(f"{execution_time: .2f}s".center(79) + "\n")
 
 # ============================ SEARCH_DATASET =================================
 
@@ -176,8 +201,12 @@ class RagSystem():
         self,
         dataset_path: str,
         k: int = 5,
-        output_path: str = "",
+        save_directory: str = "",
                       ) -> None:
+
+        os.system("clear")
+
+        start_time = time.perf_counter()
 
         if (k <= 0):
             print("k cannot be less than or equal to 0")
@@ -197,8 +226,12 @@ class RagSystem():
             print(f"{self.r}[ERROR]{self.rs}: {e}")
             exit()
 
+        print("\n" + c.Fore.BLUE + "".center(79, "="))
+        print(" SEARCH DATASET ".center(79, "="))
+        print("".center(79, "=") + self.ra + "\n\n")
+
         all_results = []
-        for item in dataset.rag_questions:
+        for item in tqdm(dataset.rag_questions, "Search", colour="BLUE"):
             q = UnansweredQuestion.model_validate(item.model_dump())
             results: list[MinimalSource] = search(  # type: ignore[assignment]
                 q.question, retriever, chunk_metadata, k=k)
@@ -223,10 +256,98 @@ class RagSystem():
         output = StudentSearchResults(search_results=all_results, k=k)
         out_json = json.dumps(output.model_dump(), indent=2)
 
-        if output_path:
-            os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        output_path = ""
+        if (save_directory):
+            os.makedirs(save_directory, exist_ok=True)
+            output_path = os.path.join(
+                save_directory, os.path.basename(dataset_path))
             with open(output_path, "w") as f:
                 f.write(out_json)
+
+        print("\n\n" + "Saved student_search_results to:")
+        print(c.Fore.BLUE + output_path + self.ra + "\n")
+
+        end_time = time.perf_counter()
+        execution_time = end_time - start_time
+        print("\n" + c.Fore.BLUE + " Search dataset complete! ".center(79) +
+              self.ra)
+        print(f"{execution_time: .2f}s".center(79) + "\n")
+
+# ============================ SEARCH_DATASET =================================
+
+    def answer_dataset(
+        self,
+        student_search_results_path: str,
+        save_directory: str
+                      ) -> None:
+
+        load_llm()
+        os.system("clear")
+
+        try:
+            with open(student_search_results_path, "r") as f:
+                raw = json.load(f)
+            dataset = StudentSearchResults.model_validate(raw)
+        except Exception as e:
+            print(f"{self.r}[ERROR]{self.rs}: Could not load dataset: {e}")
+            exit()
+
+        try:
+            retriever, chunk_metadata = load_index()
+        except PermissionError as e:
+            print(f"{self.r}[ERROR]{self.rs}: {e}")
+            exit()
+
+        start_time = time.perf_counter()
+
+        print("\n" + c.Fore.GREEN + "".center(79, "="))
+        print(" ANSWER DATASET ".center(79, "="))
+        print("".center(79, "=") + self.ra + "\n\n")
+
+        print("Loading model: " + c.Fore.GREEN + "Qwen/Qwen3-0.6B" + "\n" +
+              c.Fore.RESET)
+
+        all_answers = []
+
+        for data in tqdm(dataset.search_results,
+                         "Generating Responses", colour="GREEN"):
+
+            sources: list[MinimalSource] = search(  # type: ignore[assignment]
+                    data.question_str, retriever,
+                    chunk_metadata, k=dataset.k)
+
+            a = gen_answer(data.question_str, sources)
+
+            minimal_sources = [
+                MinimalSource(
+                    file_path=fp,
+                    first_character_index=start,
+                    last_character_index=end,
+                )
+                for fp, start, end in sources
+            ]
+
+            answer = MinimalAnswer(question_id=data.question_id,
+                                   question_str=data.question_str,
+                                   retrieved_sources=minimal_sources,
+                                   answer=a)
+            all_answers.append(answer)
+
+        output = StudentSearchResultsAndAnswer(search_results=all_answers,
+                                               k=dataset.k)
+
+        os.makedirs(save_directory, exist_ok=True)
+        filename = os.path.basename(student_search_results_path)
+        save_path = os.path.join(save_directory, filename)
+
+        with open(save_path, 'w', encoding='utf-8') as f:
+            f.write(output.model_dump_json(indent=2))
+
+        end_time = time.perf_counter()
+        execution_time = end_time - start_time
+        print("\n" + c.Fore.GREEN + " Answer dataset complete! ".center(79) +
+              self.ra)
+        print(f"{execution_time: .2f}s".center(79) + "\n")
 
 
 # *****************************************************************************
