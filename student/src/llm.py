@@ -7,7 +7,7 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/07/01 09:14:14 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/07/03 14:53:52 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/07/03 14:54:20 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
@@ -36,7 +36,7 @@ def load_llm() -> None:
     try:
         _cache_pipeline = pipeline("text-generation", model="Qwen/Qwen3-0.6B",
                                    clean_up_tokenization_spaces=False,
-                                   torch_dtype=torch.float16, device_map="auto)
+                                   torch_dtype=torch.float16, device_map="auto")
     except Exception as e:
         print(f"[ERROR] Failed to load model: {e}")
         exit()
