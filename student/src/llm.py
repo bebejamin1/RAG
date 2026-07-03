@@ -7,11 +7,12 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/07/01 09:14:14 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/07/03 14:46:51 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/07/03 14:50:01 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
 import re
+import torch
 
 from student.src.pydantic import MinimalSource
 from transformers import pipeline, GenerationConfig
@@ -25,6 +26,8 @@ _cache_pipeline: Optional[Any] = None
 # *                                                                           *
 
 def load_llm() -> None:
+    torch.cuda.empty_cache()
+
     global _cache_pipeline
 
     if _cache_pipeline is not None:
