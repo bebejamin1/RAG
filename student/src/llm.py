@@ -7,12 +7,11 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/07/01 09:14:14 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/07/03 15:13:11 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/07/03 15:14:45 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
 import re
-import torch
 
 from student.src.pydantic import MinimalSource
 from transformers import pipeline, GenerationConfig
@@ -27,26 +26,15 @@ _cache_pipeline: Optional[Any] = None
 
 def load_llm() -> None:
 
-    if torch.backends.mps.is_available():
-        device = "mps"
-    elif torch.cuda.is_available():
-        device = "cuda"
-    else:
-        device = "cpu"
-
     global _cache_pipeline
-
-    print(device)
 
     if _cache_pipeline is not None:
         return
 
     try:
-        _cache_pipeline = pipeline("text-generation", model="Qwen/Qwen3-0.6B",
-                                   clean_up_tokenization_spaces=False,
-                                   torch_dtype=dtype, device=device)
+        _cache_pipeline = pipeline("text-generation", model="Qwen/Qwen3-0.6B")
     except Exception as e:
-        print(f"[ERROR] Failed to load model: {e}")
+        print(f"[ERROR] Failed to load model")
         exit()
 
 
