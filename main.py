@@ -7,7 +7,7 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/06/19 13:18:12 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/07/03 14:55:37 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/07/03 15:09:28 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
@@ -297,7 +297,7 @@ class RagSystem():
             exit()
 
         load_llm()
-        os.system("clear")
+        # os.system("clear")
 
         start_time = time.perf_counter()
 
