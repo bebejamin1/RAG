@@ -7,7 +7,7 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/06/19 13:18:12 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/07/03 12:22:41 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/07/03 13:36:02 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
@@ -281,9 +281,6 @@ class RagSystem():
         save_directory: str
                       ) -> None:
 
-        load_llm()
-        os.system("clear")
-
         try:
             with open(student_search_results_path, "r") as f:
                 raw = json.load(f)
@@ -297,6 +294,9 @@ class RagSystem():
         except PermissionError as e:
             print(f"{self.r}[ERROR]{self.rs}: {e}")
             exit()
+
+        load_llm()
+        os.system("clear")
 
         start_time = time.perf_counter()
 
@@ -335,7 +335,7 @@ class RagSystem():
 
         output = StudentSearchResultsAndAnswer(search_results=all_answers,
                                                k=dataset.k)
-
+        # faire le search dataset
         os.makedirs(save_directory, exist_ok=True)
         filename = os.path.basename(student_search_results_path)
         save_path = os.path.join(save_directory, filename)
