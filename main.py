@@ -7,7 +7,7 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/06/19 13:18:12 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/07/03 15:19:12 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/07/03 15:23:10 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
@@ -16,7 +16,6 @@ import json
 import os
 import fire
 import time
-import torch
 
 from tqdm import tqdm
 from student.src.indexing import _PROJECT_ROOT, index_main, load_index
@@ -337,7 +336,7 @@ class RagSystem():
 
         output = StudentSearchResultsAndAnswer(search_results=all_answers,
                                                k=dataset.k)
-        # faire le search dataset
+
         os.makedirs(save_directory, exist_ok=True)
         filename = os.path.basename(student_search_results_path)
         save_path = os.path.join(save_directory, filename)
@@ -358,7 +357,6 @@ class RagSystem():
 
 def main():
     try:
-        torch.cuda.empty_cache()
         fire.Fire(RagSystem)
     except KeyboardInterrupt:
         print("STOOOOOOOOOOOOOOOOOOOOOOOOP")
