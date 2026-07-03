@@ -6,7 +6,7 @@
 #    By: bbeaurai <bbeaurai@student.42lehavre.fr    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/26 11:22:22 by bbeaurai          #+#    #+#              #
-#    Updated: 2026/07/03 14:01:15 by bbeaurai         ###   ########.fr        #
+#    Updated: 2026/07/03 14:20:46 by bbeaurai         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -40,8 +40,8 @@ endif
 check-venv :
 	clear
 	@test -d .venv || (echo "" && \
-		echo "$(RED)ERREUR : venv introuvable.$(NC)" && \
-		echo "$(YELLOW)Lance d'abord :$(NC) make install" && \
+		echo "$(RED)ERREUR : venv not found.$(NC)" && \
+		echo "$(YELLOW)first throw :$(NC) make install" && \
 		echo "" && exit 1)
 
 # ── Targets obligatoires (sujet) ────────────────────────────────────────── #
@@ -104,7 +104,7 @@ search_dataset : check-venv
 	@$(UV) search_dataset --dataset_path=$(DATASET) --k=$(K) \
 		--save_directory=$(SEARCH_OUT)
 
-$(SEARCH_RESULT) :  # if 
+$(SEARCH_RESULT) :  # if
 	@$(MAKE) search_dataset
 
 answer_dataset : check-venv $(SEARCH_RESULT)
@@ -145,15 +145,15 @@ clean :
 
 clean_index :
 	@echo ""
-	@echo "$(RED)SUPPRESSION INDEX BM25...$(NC)"
+	@echo "$(RED)DELETION INDEX BM25...$(NC)"
 	@rm -rf data/processed/bm25_index data/processed/chunks
-	@echo "$(GREEN)INDEX SUPPRIMÉ$(NC)"
+	@echo "$(GREEN)INDEX DELETE$(NC)"
 
 clean_output :
 	@echo ""
-	@echo "$(RED)SUPPRESSION OUTPUTS...$(NC)"
+	@echo "$(RED)DELETION OUTPUTS...$(NC)"
 	@rm -rf data/output
-	@echo "$(GREEN)OUTPUTS SUPPRIMÉS$(NC)"
+	@echo "$(GREEN)OUTPUTS DELETE$(NC)"
 
 fclean : clean clean_index clean_output
 
