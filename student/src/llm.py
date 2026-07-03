@@ -7,7 +7,7 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/07/01 09:14:14 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/07/03 15:08:31 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/07/03 15:10:06 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
@@ -36,6 +36,8 @@ def load_llm() -> None:
         dtype = torch.float32
 
     global _cache_pipeline
+
+    print(device)
 
     if _cache_pipeline is not None:
         return
