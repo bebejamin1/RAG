@@ -7,7 +7,7 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/07/01 09:14:14 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/07/03 15:12:41 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/07/03 15:13:11 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
@@ -28,7 +28,7 @@ _cache_pipeline: Optional[Any] = None
 def load_llm() -> None:
 
     if torch.backends.mps.is_available():
-                device = "mps"
+        device = "mps"
     elif torch.cuda.is_available():
         device = "cuda"
     else:
