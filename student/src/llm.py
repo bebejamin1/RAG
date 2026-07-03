@@ -7,7 +7,7 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/07/01 09:14:14 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/07/03 15:07:04 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/07/03 15:08:31 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
@@ -27,11 +27,6 @@ _cache_pipeline: Optional[Any] = None
 
 def load_llm() -> None:
 
-    global _cache_pipeline
-
-    if _cache_pipeline is not None:
-        return
-
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
         device = "cuda"
@@ -39,6 +34,11 @@ def load_llm() -> None:
     else:
         device = "cpu"
         dtype = torch.float32
+
+    global _cache_pipeline
+
+    if _cache_pipeline is not None:
+        return
 
     try:
         _cache_pipeline = pipeline("text-generation", model="Qwen/Qwen3-0.6B",
