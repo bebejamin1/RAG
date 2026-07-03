@@ -6,7 +6,7 @@
 #    By: bbeaurai <bbeaurai@student.42lehavre.fr    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/26 11:22:22 by bbeaurai          #+#    #+#              #
-#    Updated: 2026/07/03 14:20:46 by bbeaurai         ###   ########.fr        #
+#    Updated: 2026/07/03 15:34:08 by bbeaurai         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -43,6 +43,11 @@ check-venv :
 		echo "$(RED)ERREUR : venv not found.$(NC)" && \
 		echo "$(YELLOW)first throw :$(NC) make install" && \
 		echo "" && exit 1)
+
+check-index :
+	@test -d data/processed/bm25_index || (echo "" && \
+		echo "$(YELLOW)Index not found, indexing...$(NC)" && \
+		$(MAKE) index)
 
 # ── Targets obligatoires (sujet) ────────────────────────────────────────── #
 
@@ -87,19 +92,19 @@ index : check-venv
 	@$(UV) index --repo_path=$(REPO)
 
 # make search Q="What is vLLM ?"
-search : check-venv
+search : check-venv check-index
 	@QUERY="$(strip $(if $(Q),$(Q),$(RAW_SEARCH_QUERY)))"; \
 	$(UV) search --query="$$QUERY" --k=$(K)
 
 # make answer Q="What is vLLM ?"
-answer : check-venv
+answer : check-venv check-index
 	@QUERY="$(strip $(if $(Q),$(Q),$(RAW_ANSWER_QUERY)))"; \
 	echo ""; \
 	$(UV) answer --query="$$QUERY" --k=$(K)
 
 SEARCH_RESULT	= $(SEARCH_OUT)/$(notdir $(DATASET))
 
-search_dataset : check-venv
+search_dataset : check-venv check-index
 	@echo ""
 	@$(UV) search_dataset --dataset_path=$(DATASET) --k=$(K) \
 		--save_directory=$(SEARCH_OUT)
@@ -107,7 +112,7 @@ search_dataset : check-venv
 $(SEARCH_RESULT) :  # if
 	@$(MAKE) search_dataset
 
-answer_dataset : check-venv $(SEARCH_RESULT)
+answer_dataset : check-venv check-index $(SEARCH_RESULT)
 	@echo ""
 	@$(UV) answer_dataset \
 		--student_search_results_path=$(SEARCH_RESULT) \
@@ -159,4 +164,4 @@ fclean : clean clean_index clean_output
 
 .PHONY: all help install run debug index search answer search_dataset \
         answer_dataset evaluate lint clean clean_index \
-        clean_output fclean check-venv
+        clean_output fclean check-venv check-index
