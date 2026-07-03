@@ -7,7 +7,7 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/06/19 13:18:12 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/07/03 14:13:22 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/07/03 14:55:37 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
@@ -359,7 +359,7 @@ def main():
     try:
         fire.Fire(RagSystem)
     except KeyboardInterrupt:
-        print("pk tu arrete ?")
+        print("STOOOOOOOOOOOOOOOOOOOOOOOOP")
 
 
 if __name__ == "__main__":
