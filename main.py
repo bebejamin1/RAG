@@ -7,7 +7,7 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/06/19 13:18:12 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/07/03 13:36:02 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/07/03 14:13:22 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
@@ -264,8 +264,9 @@ class RagSystem():
             with open(output_path, "w") as f:
                 f.write(out_json)
 
-        print("\n\n" + "Saved student_search_results to:")
-        print(c.Fore.BLUE + output_path + self.ra + "\n")
+        if output_path:
+            print("\n\n" + "Saved student_search_results to:")
+            print(c.Fore.BLUE + output_path + self.ra + "\n")
 
         end_time = time.perf_counter()
         execution_time = end_time - start_time
@@ -355,7 +356,10 @@ class RagSystem():
 # *                                                                           *
 
 def main():
-    fire.Fire(RagSystem)
+    try:
+        fire.Fire(RagSystem)
+    except KeyboardInterrupt:
+        print("pk tu arrete ?")
 
 
 if __name__ == "__main__":

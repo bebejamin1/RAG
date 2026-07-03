@@ -6,7 +6,7 @@
 #    By: bbeaurai <bbeaurai@student.42lehavre.fr    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/26 11:22:22 by bbeaurai          #+#    #+#              #
-#    Updated: 2026/07/03 09:41:14 by bbeaurai         ###   ########.fr        #
+#    Updated: 2026/07/03 14:01:15 by bbeaurai         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -97,15 +97,20 @@ answer : check-venv
 	echo ""; \
 	$(UV) answer --query="$$QUERY" --k=$(K)
 
+SEARCH_RESULT	= $(SEARCH_OUT)/$(notdir $(DATASET))
+
 search_dataset : check-venv
 	@echo ""
 	@$(UV) search_dataset --dataset_path=$(DATASET) --k=$(K) \
-		--save_directory=$(SEARCH_OUT)/$(notdir $(DATASET))
+		--save_directory=$(SEARCH_OUT)
 
-answer_dataset : check-venv
+$(SEARCH_RESULT) :  # if 
+	@$(MAKE) search_dataset
+
+answer_dataset : check-venv $(SEARCH_RESULT)
 	@echo ""
 	@$(UV) answer_dataset \
-		--student_search_results_path=$(SEARCH_OUT)/$(notdir $(DATASET)) \
+		--student_search_results_path=$(SEARCH_RESULT) \
 		--save_directory=$(ANSWER_OUT)
 
 evaluate : check-venv
