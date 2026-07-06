@@ -21,6 +21,7 @@ from tqdm import tqdm
 from student.src.indexing import _PROJECT_ROOT, index_main, load_index
 from student.src.retriever import search
 from student.src.llm import gen_answer, load_llm
+from student.src.evaluation import ground_truth, recall_at_k
 from student.src.pydantic import (
     MinimalSource,
     MinimalAnswer,
@@ -38,7 +39,7 @@ from student.src.pydantic import (
 
 class RagSystem():
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.ra = c.Style.RESET_ALL
         self.rs = "\033[0m"
         self.r = "\033[31m\033[5m\033[1m"
@@ -350,12 +351,81 @@ class RagSystem():
               self.ra)
         print(f"{execution_time: .2f}s".center(79) + "\n")
 
+# =============================== EVALUATE ====================================
+
+    def evaluate(
+        self,
+        student_answer_path: str,
+        dataset_path: str,
+        k: int = 10,
+                ) -> None:
+
+        if (k <= 0):
+            print("k cannot be less than or equal to 0")
+            exit()
+
+        try:
+            with open(student_answer_path, "r") as f:
+                results = StudentSearchResults.model_validate(json.load(f))
+        except Exception as e:
+            print(f"{self.r}[ERROR]{self.rs}: "
+                  f"Could not load student results: {e}")
+            exit()
+
+        try:
+            with open(dataset_path, "r") as f:
+                dataset = RagDataset.model_validate(json.load(f))
+        except Exception as e:
+            print(f"{self.r}[ERROR]{self.rs}: Could not load dataset: {e}")
+            exit()
+
+        start_time = time.perf_counter()
+
+        print("\n" + c.Fore.LIGHTMAGENTA_EX + "".center(79, "="))
+        print(" EVALUATE ".center(79, "="))
+        print("".center(79, "=") + self.ra + "\n\n")
+
+        truth = ground_truth(dataset)
+
+        with_sources = sum(1 for s in truth.values() if s)
+        with_student = sum(
+            1 for r in results.search_results if r.retrieved_sources)
+
+        print("Student data is valid: True")
+        print(f"Total number of questions: {len(dataset.rag_questions)}")
+        print(f"Total number of questions with sources: {with_sources}")
+        print("Total number of questions with student sources: "
+              f"{with_student}\n")
+
+        ks = [n for n in (1, 3, 5, 10) if n <= k]
+        if (k not in ks):
+            ks.append(k)
+
+        recalls = []
+        evaluated = 0
+        for n in tqdm(ks, "Evaluating", colour="MAGENTA"):
+            score, evaluated = recall_at_k(results, truth, n)
+            recalls.append((n, score))
+
+        print("\n\n" + c.Fore.LIGHTMAGENTA_EX + "Evaluation Results" +
+              self.ra)
+        print("".center(40, "="))
+        print(f"Questions evaluated: {evaluated}")
+        for n, score in recalls:
+            print(f"Recall@{n}: {score:.3f}")
+
+        end_time = time.perf_counter()
+        execution_time = end_time - start_time
+        print("\n" + c.Fore.LIGHTMAGENTA_EX +
+              " Evaluation complete! ".center(79) + self.ra)
+        print(f"{execution_time: .2f}s".center(79) + "\n")
+
 
 # *****************************************************************************
 # *                                MAIN                                       *
 # *                                                                           *
 
-def main():
+def main() -> None:
     try:
         fire.Fire(RagSystem)
     except KeyboardInterrupt:

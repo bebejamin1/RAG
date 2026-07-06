@@ -1,186 +1,190 @@
-# RAG against the machine
-
 *This project has been created as part of the 42 curriculum by bbeaurai.*
 
----
+# RAG against the machine
 
-## Checklist de progression
+## Description
 
-### Setup & Structure du projet
-- [X] Initialiser le projet avec `uv` (`uv init`)
-- [X] Créer `pyproject.toml` et générer `uv.lock`
-- [X] Créer le dossier `src/` avec le module principal (`src/__main__.py` ou `src/__init__.py`)
-- [X] Ajouter un `Makefile` avec les règles : `install`, `run`, `debug`, `clean`, `lint`
-- [X] Vérifier que `.gitignore` exclut `__pycache__`, `.mypy_cache`, données générées, poids de modèles
-- [X] Python 3.10+ uniquement
-- [X] `uv run python -m src` doit fonctionner
+A Retrieval-Augmented Generation (RAG) system that answers questions about
+the [vLLM](https://github.com/vllm-project/vllm) codebase (v0.10.1).
 
-### Dépendances recommandées à installer
-- [X] `pydantic` — validation des modèles
-- [X] `fire` — CLI
-- [X] `tqdm` — barres de progression
-- [X] `bm25s` ou `scikit-learn` — retrieval (BM25 ou TF-IDF)
-- [X] `transformers` — LLM (Qwen3-0.6B)
-- [X] `flake8` + `mypy` — qualité de code
+The pipeline ingests the repository (Python code, Markdown, reStructuredText
+and plain-text documentation), chunks it with type-specific strategies,
+indexes it with BM25, retrieves the most relevant excerpts for a question,
+and generates a grounded natural-language answer with the
+`Qwen/Qwen3-0.6B` model. Retrieval quality is measured with recall@k
+against annotated ground-truth datasets.
 
-dspy, langchain, chromadb
+## Instructions
 
-### Modèles Pydantic (7 obligatoires)
-- [X] `MinimalSource` — `file_path`, `first_character_index`, `last_character_index`
-- [X] `UnansweredQuestion` — `question_id` (uuid), `question`
-- [X] `AnsweredQuestion(UnansweredQuestion)` — `sources`, `answer`
-- [X] `RagDataset` — `rag_questions: List[AnsweredQuestion | UnansweredQuestion]`
-- [X] `MinimalSearchResults` — `question_id`, `question`, `retrieved_sources`
-- [X] `MinimalAnswer(MinimalSearchResults)` — `answer`
-- [X] `StudentSearchResults` — `search_results`, `k`
-- [X] `StudentSearchResultsAndAnswer(StudentSearchResults)` — `search_results: List[MinimalAnswer]`
+Requirements: [uv](https://docs.astral.sh/uv/) (it installs the pinned
+Python version and all dependencies itself).
 
-### Ingestion / Indexing
-- [X] Lire tous les fichiers utiles du repo `vllm-0.10.1/` (`.py`, `.md`, `.rst`...)
-- [X] Implémenter le chunking **Python** (par fonction/classe via AST)
-- [X] Implémenter le chunking **Markdown/texte** (par section/paragraphe)
-- [X] Taille max des chunks : **2000 caractères**, configurable via `--max_chunk_size`
-- [X] Chaque chunk stocke : `file_path`, `first_character_index`, `last_character_index`
-- [X] Construire l'index BM25 ou TF-IDF
-- [X] Sauvegarder l'index dans `data/processed/` pour réutilisation
-- [X] Temps d'indexing < **5 minutes**
-- [X] CLI : `uv run python -m src index --max_chunk_size 2000`
+```bash
+make install          # uv sync — creates .venv and installs dependencies
+make index            # build the BM25 index from data/raw/vllm-0.10.1
+make search Q="How to configure OpenAI server?"
+make answer Q="How to configure OpenAI server?"
+make search_dataset   # retrieve sources for the whole docs dataset
+make answer_dataset   # generate LLM answers for the retrieved sources
+make evaluate         # recall@k on BOTH docs and code datasets
+make evaluate_one TYPE=code   # recall@k on a single dataset (docs|code)
+make lint             # flake8 + mypy (subject flags)
+make clean            # remove caches ; make fclean also removes index/outputs
+```
 
-### Retrieval System
-- [X] Implémenter **BM25** ou **TF-IDF** (au moins un des deux)
-- [X] Retourner les top-k résultats avec `file_path`, `first_character_index`, `last_character_index`
-- [X] CLI : `uv run python -m src search "query" --k 10`
-- [X] CLI : `uv run python -m src search_dataset --dataset_path <path> --k 10 --save_directory <dir>`
-- [ ] Output JSON valide conforme à `StudentSearchResults`
-- [ ] Cold start latency < **60 secondes**
-- [ ] Throughput : 1000 questions en < **90 secondes** (après cold start)
+The unzipped vLLM repository is expected under `data/raw/vllm-0.10.1`
+(the indexer tells you where to put it if it is missing).
 
-### Answer Generation
-- [ ] Utiliser `Qwen/Qwen3-0.6B` comme modèle **par défaut**
-- [ ] Passer les chunks récupérés en contexte au LLM (dans les limites de tokens)
-- [ ] Générer des réponses : self-contained, source-grounded, faithful, relevant
-- [ ] CLI : `uv run python -m src answer "query" --k 10`
-- [ ] CLI : `uv run python -m src answer_dataset --student_search_results_path <path> --save_directory <dir>`
-- [ ] Output JSON valide conforme à `StudentSearchResultsAndAnswer`
+## System Architecture
 
-### Evaluation System
-- [ ] Implémenter la métrique **Recall@k**
-- [ ] Overlap de 5% minimum entre source récupérée et source correcte = "found"
-- [ ] Score par question : `nb_found / total_correct_sources`
-- [ ] CLI : `uv run python -m src evaluate --student_answer_path <path> --dataset_path <path> --k 10`
+```
+                 ┌────────────┐   ┌─────────┐   ┌────────────┐
+ vLLM repo ────► │  chunker   │──►│  BM25   │──►│  storage   │  (index)
+ (.py .md ...)   │ (per type) │   │ (bm25s) │   │ data/      │
+                 └────────────┘   └─────────┘   │ processed/ │
+                                                └─────┬──────┘
+                                                      │
+ question ──► tokenize ──► BM25 retrieve ──► top-k sources  (search)
+                                                      │
+ top-k excerpts ──► context window ──► Qwen3-0.6B ──► answer  (answer)
+                                                      │
+ retrieved sources + ground truth ──► recall@k  (evaluate)
+```
 
-### Performances cibles (obligatoires)
-- [ ] **Docs Recall@5 >= 80%** (test sur dataset docs privé, 100 questions)
-- [ ] **Code Recall@5 >= 50%** (test sur dataset code privé, 100 questions)
+- `student/src/chunker.py` — file filtering and the two chunking strategies
+- `student/src/indexing.py` — repository ingestion, BM25 index build/load
+- `student/src/retriever.py` — BM25 search and ranking
+- `student/src/llm.py` — prompt construction and answer generation
+- `student/src/evaluation.py` — recall@k computation (5% overlap rule)
+- `main.py` — Python Fire CLI exposing `index`, `search`, `search_dataset`,
+  `answer`, `answer_dataset`, `evaluate`
+- All data exchanged between stages is validated by the pydantic models
+  of `student/src/pydantic.py` (the 7 models required by the subject).
 
-### Gestion des cas limites (edge cases)
-- [ ] Query vide : `search "" --k 10` → pas de crash
-- [ ] Query absurde : `search "asdfghjkl" --k 10` → pas de crash
-- [ ] k=0 : `answer "..." --k 0` → pas de crash
-- [ ] Chemin dataset inexistant : `search_dataset --dataset_path /nonexistent.json` → pas de crash
-- [ ] Aucune exception Python non gérée (pas de traceback visible)
+## Chunking Strategy
 
-### Qualité du code
-- [ ] Toutes les classes utilisent **pydantic**
-- [ ] Code conforme **flake8** (pas d'erreurs)
-- [ ] **Type hints** sur toutes les fonctions (paramètres + retours)
-- [ ] **mypy** passe sans erreurs (`--disallow-untyped-defs --check-untyped-defs`)
-- [ ] **Docstrings** sur les classes et fonctions (style Google ou NumPy)
-- [ ] Exceptions gérées avec `try-except` partout
-- [ ] Context managers pour les ressources (fichiers, connexions)
-- [ ] **tqdm** pour toutes les opérations longues
-- [ ] Aucun import de packages `moulinette` : `grep -rn "moulinette" src/ --include="*.py"` → rien
+Two strategies, selected by file extension (`.py` vs `.md`/`.rst`/`.txt`):
 
-### README (obligatoire, 5/6 sections minimum)
-- [ ] Première ligne italique avec login 42
-- [ ] Section **Description** (but du projet, overview)
-- [ ] Section **Instructions** (installation, exécution)
-- [ ] Section **System Architecture** (pipeline RAG, composants)
-- [ ] Section **Chunking Strategy** (approche de segmentation)
-- [ ] Section **Retrieval Method** (algorithme + ranking)
-- [ ] Section **Performance Analysis** (recall@k obtenu)
-- [ ] Section **Design Decisions** (choix d'implémentation + trade-offs)
-- [ ] Section **Challenges** (difficultés rencontrées + solutions)
-- [ ] Section **Example Usage** (exemples de commandes)
-- [ ] Section **Resources** (références + utilisation de l'IA)
+- **Python (AST-based)**: the file is parsed with `ast`; every top-level
+  statement (function, class, imports, module docstring) becomes a block,
+  decorators included. Consecutive blocks are merged while they fit in
+  `max_chunk_size`, so a chunk keeps whole definitions together. Blocks
+  larger than the limit are re-split with the text splitter, and files
+  that do not parse fall back to text chunking.
+- **Text (recursive)**: `RecursiveCharacterTextSplitter` (LangChain) with
+  a 200-character overlap, splitting on paragraph, then line, then word
+  boundaries.
 
----
+The maximum chunk size is **2000 characters**, configurable with
+`index --max_chunk_size N`. Too-small chunks fragment definitions and
+paragraphs (a chunk no longer carries enough context to score well and
+the 5% overlap with a ground-truth source becomes harder to reach);
+too-large chunks dilute the BM25 term statistics and waste the LLM
+context window with noise.
 
-## Bonus (optionnel, max 5 points)
+## Retrieval Method
 
-- [ ] **+1pt** — Query expansion (synonymes, query rewriting)
-- [ ] **+1pt** — Semantic embeddings pour le retrieval
-- [ ] **+1pt** — Caching (index cache, query cache)
-- [ ] **+2pts** — Hybrid retrieval (BM25 + embeddings)
-- [ ] **+2pts** — Inférence LLM via **vLLM** (local serving)
+BM25 (via `bm25s`), with English stopword removal at tokenization time.
+For a query, the top `10 × k` candidate chunks are retrieved, then walked
+in descending score order keeping **at most 3 chunks per file** until `k`
+results are selected. This cap keeps results diverse across files while
+still allowing several excerpts of one file to be returned — important
+for code questions, whose ground-truth sources often live in a single
+module. Each result is returned as
+`(file_path, first_character_index, last_character_index)`.
 
----
+## Performance Analysis
 
-## Ordre suggéré pour commencer
+Measured on the 100-question public and private datasets (k = 10):
 
-1. Setup `uv` + structure `src/` + CLI basique avec `fire`
-2. Modèles Pydantic (copier-coller du sujet, adapter)
-3. Ingestion + chunking basique (taille fixe pour commencer)
-4. BM25 simple → tester Recall@5 sur le dataset public
-5. Améliorer le chunking (Python AST + Markdown sections)
-6. Intégrer Qwen3-0.6B pour la génération
-7. Edge cases + flake8/mypy
-8. README complet
-9. Bonus si le temps le permet
+| Dataset       | Recall@5  | Recall@10 | Threshold |
+|---------------|-----------|-----------|-----------|
+| docs public   | **0.850** | 0.930     | ≥ 0.80    |
+| docs private  | **0.850** | 0.890     | ≥ 0.80    |
+| code public   | **0.550** | 0.600     | ≥ 0.50    |
+| code private  | **0.520** | 0.590     | ≥ 0.50    |
 
+System performance (required limits in parentheses):
 
-pytest et unittest pour faire des tests
-utiliser des venv
+- Indexing: ~4 s for 1952 files / 14 109 chunks (limit: 5 min)
+- Cold start: index load ≈ 1 s; first `answer` including model load
+  well under 60 s (limit: 60 s)
+- Warm retrieval: 100 questions run in well under a second, far below
+  the 90 s / 1000 questions limit
 
-pendant la creation dune ia il faut lentrainer
-pour developper
-- la comprehension du langage
-- le raisonnement et lanalyse structurelle
-pour cela il faut fournir une enorme quantite de donnees
+## Design Decisions
 
-apres ca le model se souvient de ce quil a appris mais il ne connais que les donnees quon lui a fournies
-et donc pour quil connaissent plus de chose faut le reentrainer
+- **BM25 over TF-IDF**: better length normalization and term saturation,
+  and `bm25s` gives a fast, persistable index with no service to run.
+- **Per-file result cap of 3** instead of one-chunk-per-file
+  deduplication: measured +6 points of docs recall@5 and +7 points of
+  code recall@5 versus the strict-dedup baseline, because multi-source
+  questions are no longer limited to one excerpt per file.
+- **AST chunking for Python**: chunk boundaries follow definitions, so a
+  retrieved excerpt is a coherent unit of code instead of an arbitrary
+  2000-character window.
+- **Plain tokenization kept**: identifier splitting (snake_case /
+  camelCase) and English stemming were both tested; they raised code
+  recall (up to 0.61) but dropped docs recall below the 80% threshold,
+  so they were rejected.
+- **Answer prompting**: the retrieved excerpts are concatenated into the
+  context within a character budget, and the system prompt (with
+  `/no_think`) forces short, self-contained, context-only answers.
 
-Lentrainement est une technique et le RAG en est une autre
-le RAG donne acces a une source dinfo externe de notre choix plutot que de fournir des donnees
+## Challenges Faced
 
-RAG ==== Génération Augmentée par Récupération | Retrieving Augmented Generation
+- **Character-exact chunk offsets**: recall is computed on character
+  ranges, so every chunk must carry exact `first/last_character_index`
+  values — the AST chunker converts line numbers to character offsets
+  and sub-splitting re-offsets indices relative to the parent block.
+- **Docs/code trade-off**: almost every tokenization trick that improved
+  code retrieval degraded docs retrieval; the fix that helped both was
+  relaxing the per-file deduplication, not the tokenization.
+- **Small-model faithfulness**: Qwen3-0.6B hallucinates easily; a strict
+  system prompt and disabling its thinking mode keep answers grounded in
+  the retrieved context.
 
-1er etape
-Indexation:
-les donnees doivents etre indexees. etape structure et organise linfo afin de la rendre cherchable
+## Example Usage
 
-2eme etape
-Recuperation:
-pour entrainer le model il doit interroger la base de donnees pour recuperer les extraits les plus utiles.
-Le model doit comprendre la question, une fois cela fait il met en correspondance la requete avec la base indexee pour choisir le meilleurs resultats, les informations les plus pertinents cela implique ||| l'encodage de la requête, la recherche par similarité et le classement (ranking).
+```bash
+uv run python -m student.src index --max_chunk_size 2000
+uv run python -m student.src search "How to configure OpenAI server?" --k 10
+uv run python -m student.src answer "How to configure OpenAI server?" --k 10
+uv run python -m student.src search_dataset \
+    --dataset_path datasets_public/public/UnansweredQuestions/dataset_docs_public.json \
+    --k 10 --save_directory data/output/search_results
+uv run python -m student.src answer_dataset \
+    --student_search_results_path data/output/search_results/dataset_docs_public.json \
+    --save_directory data/output/search_results_and_answer
+uv run python -m student.src evaluate \
+    --student_answer_path data/output/search_results/dataset_docs_public.json \
+    --dataset_path datasets_public/public/AnsweredQuestions/dataset_docs_public.json \
+    --k 10
+```
 
-3eme etape
-Augmentation:
-Une fois que lia a trouver linformation elle peut la combiner a ce quelle sait deja.
-Mais on se basera autant que possible sur les donnes recuperee que sur la connaissance interne du modele
-car les deux peut conduire a des reponses obsoletes ou hallucinees. on peut recuperer nettoyer et les filtrer pour retirer les extraits non pertinents
-afin deviter le bruit pour inserer dans la ||| fenêtre de contexte
+## Bonus
 
-4eme etape
-Generation:
-le llm lit la fenetre de contexte
+- **Index caching**: the BM25 index and chunk metadata are persisted
+  under `data/processed/` at indexing time and transparently reloaded by
+  every later command, so search never re-ingests the repository.
 
-Vous pouvez utiliser les bibliothèques que vous voulez ; nous recommandons vivement les paquets
-transformers, dspy, fire, tqdm, langchain, bm25s, chromadb.
+## Resources
 
-• Vous devez utiliser uv comme gestionnaire de projet et de paquets.
+- [Lewis et al., 2020 — Retrieval-Augmented Generation for
+  Knowledge-Intensive NLP Tasks](https://arxiv.org/abs/2005.11401)
+- [Robertson & Zaragoza — The Probabilistic Relevance Framework: BM25 and
+  Beyond](https://www.staff.city.ac.uk/~sbrp622/papers/foundations_bm25_review.pdf)
+- [bm25s documentation](https://bm25s.github.io/)
+- [LangChain text splitters](https://python.langchain.com/docs/concepts/text_splitters/)
+- [Qwen3 model card](https://huggingface.co/Qwen/Qwen3-0.6B)
+- [pydantic documentation](https://docs.pydantic.dev/)
+- [Python Fire](https://google.github.io/python-fire/)
 
-• Votre système doit fournir une interface en ligne de commande (CLI) en utilisant Python Fire.
-
-• Des barres de progression doivent être implémentées pour les opérations longues à l'aide de tqdm.
-
-• Évaluer la qualité de votre système de récupération à l'aide des métriques recall@k
-
-CLI   Command-Line Interface
-
-chunk max 2000char
-
-AST Abstract Syntax Tree
-
-faire un chunker pour python
+**AI usage**: AI assistance (Claude) was used to cross-check the code
+against the subject and the evaluation scale, to implement the `evaluate`
+CLI command (recall@k with the 5% overlap rule), to help design the
+AST-based Python chunking, to run the retrieval tuning experiments
+(per-file cap, stemming, identifier splitting) and to draft this README.
+All generated code was reviewed, tested and is fully understood by the
+author; the pipeline architecture and the remaining implementation are
+the author's work.

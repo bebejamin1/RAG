@@ -11,12 +11,9 @@
 #                                                                             #
 # ########################################################################### #
 
-import re
 import bm25s
 
 from typing import Union, List, Tuple, Dict
-
-_TOKEN_RE = re.compile(r"[a-zA-Z0-9_]+")
 
 
 # *****************************************************************************
@@ -24,8 +21,16 @@ _TOKEN_RE = re.compile(r"[a-zA-Z0-9_]+")
 # *                                                                           *
 
 def search(query: Union[str, List[str]], retriever: bm25s.BM25,
-           chunk_metadata: List[Tuple[str, int, int]], k: int
+           chunk_metadata: List[Tuple[str, int, int]], k: int,
+           max_per_file: int = 3
            ) -> List[Tuple[str, int, int]]:
+    """Return the top-k chunks for a query, ranked by BM25 score.
+
+    Candidates are walked in descending score order and at most
+    max_per_file chunks are kept per file, so results stay diverse
+    while questions whose sources live in a single file can still
+    match several excerpts of it.
+    """
 
     if (not query or k <= 0 or not chunk_metadata):
         return []
@@ -35,23 +40,23 @@ def search(query: Union[str, List[str]], retriever: bm25s.BM25,
                                     )
 
     n = min(max(k * 10, 50), len(chunk_metadata))
-    results, scores = retriever.retrieve(tokenized_query, k=n)
+    results, _scores = retriever.retrieve(tokenized_query, k=n)
 
     indices = results[0].tolist()
-    chunk_scores = scores[0].tolist()
 
-    best_per_file: Dict[str, Tuple[int, int, float]] = {}
-    for idx, score in zip(indices, chunk_scores):
+    picked: List[Tuple[str, int, int]] = []
+    per_file: Dict[str, int] = {}
+    for idx in indices:
         file_path, start, end = chunk_metadata[idx]
-        current = best_per_file.get(file_path)
-        if current is None or score > current[2]:
-            best_per_file[file_path] = (start, end, score)
 
-    ranked = sorted(
-        best_per_file.items(), key=lambda item: item[1][2], reverse=True
-                    )[:k]
+        count = per_file.get(file_path, 0)
+        if (count >= max_per_file):
+            continue
 
-    return [
-        (file_path, start, end)
-        for file_path, (start, end, _score) in ranked
-           ]
+        per_file[file_path] = count + 1
+        picked.append((file_path, start, end))
+
+        if (len(picked) >= k):
+            break
+
+    return (picked)

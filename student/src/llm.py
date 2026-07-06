@@ -15,7 +15,7 @@ import re
 
 from student.src.pydantic import MinimalSource
 from transformers import pipeline, GenerationConfig
-from typing import List, Optional, Any
+from typing import Dict, List, Optional, Any
 
 _cache_pipeline: Optional[Any] = None
 
@@ -67,7 +67,8 @@ def read_source(src: MinimalSource) -> str:
 # *                           MAKE MESSAGE                                    *
 # *                                                                           *
 
-def make_message(query: str, sources: List[MinimalSource]) -> str:
+def make_message(query: str,
+                 sources: List[MinimalSource]) -> List[Dict[str, str]]:
     context = ""
     limit = 2000 * len(sources)
 

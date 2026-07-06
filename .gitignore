@@ -3,8 +3,11 @@ data
 datasets_public
 datasets_private
 moulinette
+moulinette-ubuntu
+exams
+evaluations
 vllm-0.10.1
-uv.lock
+moulinette-ubuntu
 
 
 # Byte-compiled / optimized / DLL files

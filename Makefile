@@ -17,9 +17,12 @@ RAW_SEARCH_QUERY	= $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
 RAW_ANSWER_QUERY	= $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
 
 
-DATASET		= datasets_public/public/UnansweredQuestions/dataset_docs_public.json
+# TYPE=docs (default) or TYPE=code — e.g. `make evaluate TYPE=code`
+TYPE		?= docs
 
-GT_DATASET	= datasets_public/public/AnsweredQuestions/dataset_docs_public.json
+DATASET		= datasets_public/public/UnansweredQuestions/dataset_$(TYPE)_public.json
+
+GT_DATASET	= datasets_public/public/AnsweredQuestions/dataset_$(TYPE)_public.json
 SEARCH_OUT	= data/output/search_results
 ANSWER_OUT	= data/output/search_results_and_answer
 REPO		= data/raw/vllm-0.10.1
@@ -53,7 +56,6 @@ check-index :
 
 install :
 	clear
-	uv venv .venv --python 3.10
 	uv sync
 
 run : check-venv
@@ -77,7 +79,8 @@ help :
 	@echo "  $(GREEN)make answer Q=\"...\"$(NC)   Complete RAG chain for a given question"
 	@echo "  $(GREEN)make search_dataset$(NC)     Search the entire dataset"
 	@echo "  $(GREEN)make answer_dataset$(NC)     Generates LLM responses for the dataset"
-	@echo "  $(GREEN)make evaluate$(NC)           Calculate Recall@k"
+	@echo "  $(GREEN)make evaluate$(NC)           Recall@k on docs AND code"
+	@echo "  $(GREEN)make evaluate_one TYPE=code$(NC)  Recall@k on one dataset"
 	@echo ""
 	@echo "  $(YELLOW)make lint$(NC)               Flake8 + mypy"
 	@echo "  $(YELLOW)make clean$(NC)              Clears Python caches"
@@ -118,11 +121,22 @@ answer_dataset : check-venv check-index $(SEARCH_RESULT)
 		--student_search_results_path=$(SEARCH_RESULT) \
 		--save_directory=$(ANSWER_OUT)
 
-evaluate : check-venv
+# Shows both recalls required by the evaluation scale:
+# docs Recall@5 >= 80% and code Recall@5 >= 50%
+evaluate : check-venv check-index
+	@$(MAKE) --no-print-directory prepare_search TYPE=docs
+	@$(MAKE) --no-print-directory prepare_search TYPE=code
+	@$(MAKE) --no-print-directory evaluate_one TYPE=docs
+	@$(MAKE) --no-print-directory evaluate_one TYPE=code
+
+prepare_search : $(SEARCH_RESULT)
+
+# make evaluate_one TYPE=docs|code — evaluate a single dataset
+evaluate_one : check-index $(SEARCH_RESULT)
 	@echo ""
-	@echo "$(PINK)EVALUATION RECALL@K...$(NC)"
+	@echo "$(PINK)EVALUATION RECALL@K — $(TYPE)$(NC)"
 	@$(UV) evaluate \
-		--student_answer_path=$(SEARCH_OUT)/$(notdir $(DATASET)) \
+		--student_answer_path=$(SEARCH_RESULT) \
 		--dataset_path=$(GT_DATASET) \
 		--k=$(K)
 
@@ -163,5 +177,5 @@ clean_output :
 fclean : clean clean_index clean_output
 
 .PHONY: all help install run debug index search answer search_dataset \
-        answer_dataset evaluate lint clean clean_index \
-        clean_output fclean check-venv check-index
+        answer_dataset evaluate evaluate_one prepare_search lint clean \
+        clean_index clean_output fclean check-venv check-index
