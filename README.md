@@ -51,15 +51,15 @@ The unzipped vLLM repository is expected under `data/raw/vllm-0.10.1`
  retrieved sources + ground truth ──► recall@k  (evaluate)
 ```
 
-- `student/src/chunker.py` — file filtering and the two chunking strategies
-- `student/src/indexing.py` — repository ingestion, BM25 index build/load
-- `student/src/retriever.py` — BM25 search and ranking
-- `student/src/llm.py` — prompt construction and answer generation
-- `student/src/evaluation.py` — recall@k computation (5% overlap rule)
-- `main.py` — Python Fire CLI exposing `index`, `search`, `search_dataset`,
-  `answer`, `answer_dataset`, `evaluate`
+- `src/chunker.py` — file filtering and the two chunking strategies
+- `src/indexing.py` — repository ingestion, BM25 index build/load
+- `src/retriever.py` — BM25 search and ranking
+- `src/llm.py` — prompt construction and answer generation
+- `src/evaluation.py` — recall@k computation (5% overlap rule)
+- `src/main.py` — Python Fire CLI exposing `index`, `search`,
+  `search_dataset`, `answer`, `answer_dataset`, `evaluate`
 - All data exchanged between stages is validated by the pydantic models
-  of `student/src/pydantic.py` (the 7 models required by the subject).
+  of `src/pydantic.py` (the 7 models required by the subject).
 
 ## Chunking Strategy
 
@@ -107,10 +107,8 @@ Measured on the 100-question public and private datasets (k = 10):
 System performance (required limits in parentheses):
 
 - Indexing: ~4 s for 1952 files / 14 109 chunks (limit: 5 min)
-- Cold start: index load ≈ 1 s; first `answer` including model load
-  well under 60 s (limit: 60 s)
-- Warm retrieval: 100 questions run in well under a second, far below
-  the 90 s / 1000 questions limit
+- Retrieval throughput: 100 questions run in well under a second, far
+  below the 90 s / 200 questions limit
 
 ## Design Decisions
 
@@ -147,18 +145,18 @@ System performance (required limits in parentheses):
 ## Example Usage
 
 ```bash
-uv run python -m student.src index --max_chunk_size 2000
-uv run python -m student.src search "How to configure OpenAI server?" --k 10
-uv run python -m student.src answer "How to configure OpenAI server?" --k 10
-uv run python -m student.src search_dataset \
-    --dataset_path datasets_public/public/UnansweredQuestions/dataset_docs_public.json \
-    --k 10 --save_directory data/output/search_results
-uv run python -m student.src answer_dataset \
-    --student_search_results_path data/output/search_results/dataset_docs_public.json \
-    --save_directory data/output/search_results_and_answer
-uv run python -m student.src evaluate \
-    --student_answer_path data/output/search_results/dataset_docs_public.json \
-    --dataset_path datasets_public/public/AnsweredQuestions/dataset_docs_public.json \
+uv run python -m src index --max_chunk_size 2000
+uv run python -m src search "How to configure OpenAI server?" --k 10
+uv run python -m src answer "How to configure OpenAI server?" --k 10
+uv run python -m src search_dataset \
+    --dataset_path data/datasets/UnansweredQuestions/dataset_docs_public.json \
+    --k 10 --save_directory data/output/search_results/UnansweredQuestions
+uv run python -m src answer_dataset \
+    --student_search_results_path data/output/search_results/UnansweredQuestions/dataset_docs_public.json \
+    --save_directory data/output/search_results_and_answer/UnansweredQuestions
+uv run python -m src evaluate \
+    --student_search_results_path data/output/search_results/UnansweredQuestions/dataset_docs_public.json \
+    --dataset_path data/datasets/AnsweredQuestions/dataset_docs_public.json \
     --k 10
 ```
 
@@ -170,21 +168,27 @@ uv run python -m student.src evaluate \
 
 ## Resources
 
-- [Lewis et al., 2020 — Retrieval-Augmented Generation for
-  Knowledge-Intensive NLP Tasks](https://arxiv.org/abs/2005.11401)
-- [Robertson & Zaragoza — The Probabilistic Relevance Framework: BM25 and
-  Beyond](https://www.staff.city.ac.uk/~sbrp622/papers/foundations_bm25_review.pdf)
-- [bm25s documentation](https://bm25s.github.io/)
-- [LangChain text splitters](https://python.langchain.com/docs/concepts/text_splitters/)
-- [Qwen3 model card](https://huggingface.co/Qwen/Qwen3-0.6B)
-- [pydantic documentation](https://docs.pydantic.dev/)
-- [Python Fire](https://google.github.io/python-fire/)
+- [Github fcaval](https://github.com/fcaval42/RAG_AgainstTheMachine)
+- [Chunking : découper vos documents pour le RAG](https://blog.stephane-robert.info/docs/developper/programmation/python/rag-chunking/)
+- [RAG : augmenter un LLM avec vos données](https://blog.stephane-robert.info/docs/developper/programmation/python/rag-introduction/)
+- [What is recall-at-k?](https://milvus.io/ai-quick-reference/what-is-recallatk)
+- [What is recall-at-k?](https://medium.com/@dev.aguillin/abstract-syntax-tree-python-85d39a53e86d)
+- [Qu’est-ce que BM25](https://www.luigisbox.fr/glossaire-recherche/bm25/#:~:text=BM25%2C%20ou%20Best%20Match%2025,de%20leur%20score%20de%20pertinence)
+- [transformers](https://huggingface.co/docs/transformers/fr/quicktour)
+- [Fire](https://github.com/google/python-fire)
+- [Fire guide](https://google.github.io/python-fire/guide/)
+- [Regex example](https://regex101.com/)
+- []()
+- []()
+- []()
+- []()
+- []()
 
-**AI usage**: AI assistance (Claude) was used to cross-check the code
-against the subject and the evaluation scale, to implement the `evaluate`
-CLI command (recall@k with the 5% overlap rule), to help design the
-AST-based Python chunking, to run the retrieval tuning experiments
-(per-file cap, stemming, identifier splitting) and to draft this README.
-All generated code was reviewed, tested and is fully understood by the
-author; the pipeline architecture and the remaining implementation are
-the author's work.
+## 🤖 AI Usage
+
+Artificial Intelligence was utilized during the development of this project to enhance efficiency, maintain high code quality, and assist with technical decisions. Specifically, AI tools were used for the following tasks:
+
+* **Project Architecture:** Assisting in the design, layout, and organization of the project's initial structure.
+* **Code Standards & Quality:** Refactoring code to ensure strict compliance with **`mypy`** (static type checking) and **`flake8`** (linting) standards.
+* **Documentation:** Generating and refining standardized docstrings for modules, classes, and functions to improve codebase readability.
+* **Technical Guidance:** Explaining complex concepts and recommending technologies that best aligned with the overall vision of the project.

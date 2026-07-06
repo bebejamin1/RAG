@@ -13,7 +13,7 @@
 
 from typing import Dict, List, Tuple
 
-from student.src.pydantic import (
+from src.pydantic import (
     AnsweredQuestion,
     MinimalSource,
     RagDataset,

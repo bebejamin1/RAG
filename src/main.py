@@ -18,11 +18,11 @@ import fire
 import time
 
 from tqdm import tqdm
-from student.src.indexing import _PROJECT_ROOT, index_main, load_index
-from student.src.retriever import search
-from student.src.llm import gen_answer, load_llm
-from student.src.evaluation import ground_truth, recall_at_k
-from student.src.pydantic import (
+from src.indexing import _PROJECT_ROOT, index_main, load_index
+from src.retriever import search
+from src.llm import gen_answer, load_llm
+from src.evaluation import ground_truth, recall_at_k
+from src.pydantic import (
     MinimalSource,
     MinimalAnswer,
     MinimalSearchResults,
@@ -111,7 +111,7 @@ class RagSystem():
 
         result = MinimalSearchResults(
             question_id="single-query",
-            question_str=query,
+            question=query,
             retrieved_sources=sources)
 
         data = result.model_dump()
@@ -119,7 +119,7 @@ class RagSystem():
         print(c.Fore.YELLOW + "Question ID : " + self.ra +
               data["question_id"])
         print(c.Fore.YELLOW + "Question    : " + self.ra +
-              data["question_str"])
+              data["question"])
         print(c.Fore.YELLOW + "Sources     : " + self.ra +
               f"{len(data['retrieved_sources'])} result(s)\n")
 
@@ -175,7 +175,7 @@ class RagSystem():
         ]
 
         _ = MinimalAnswer(question_id="single-query",
-                          question_str=query,
+                          question=query,
                           retrieved_sources=minimal_sources,
                           answer=answer_text)
 
@@ -249,7 +249,7 @@ class RagSystem():
             all_results.append(
                 MinimalSearchResults(
                     question_id=q.question_id,
-                    question_str=q.question,
+                    question=q.question,
                     retrieved_sources=sources,
                                     )
                               )
@@ -315,10 +315,10 @@ class RagSystem():
                          "Generating Responses", colour="GREEN"):
 
             sources: list[MinimalSource] = search(  # type: ignore[assignment]
-                    data.question_str, retriever,
+                    data.question, retriever,
                     chunk_metadata, k=dataset.k)
 
-            a = gen_answer(data.question_str, sources)
+            a = gen_answer(data.question, sources)
 
             minimal_sources = [
                 MinimalSource(
@@ -330,7 +330,7 @@ class RagSystem():
             ]
 
             answer = MinimalAnswer(question_id=data.question_id,
-                                   question_str=data.question_str,
+                                   question=data.question,
                                    retrieved_sources=minimal_sources,
                                    answer=a)
             all_answers.append(answer)
@@ -355,7 +355,7 @@ class RagSystem():
 
     def evaluate(
         self,
-        student_answer_path: str,
+        student_search_results_path: str,
         dataset_path: str,
         k: int = 10,
                 ) -> None:
@@ -365,7 +365,7 @@ class RagSystem():
             exit()
 
         try:
-            with open(student_answer_path, "r") as f:
+            with open(student_search_results_path, "r") as f:
                 results = StudentSearchResults.model_validate(json.load(f))
         except Exception as e:
             print(f"{self.r}[ERROR]{self.rs}: "

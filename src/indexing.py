@@ -21,12 +21,12 @@ from tqdm import tqdm
 from pathlib import Path
 from typing import Tuple, List
 
-from student.src.chunker import chunker, is_indexable
+from src.chunker import chunker, is_indexable
 
 IGNORED_DIRS = {"__pycache__", "node_modules", ".git", ".venv", "venv",
                 "build", "dist", ".mypy_cache", ".pytest_cache"}
 
-_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 INDEX_DIR = f"{_PROJECT_ROOT}/data/processed"
 BM25_PATH = f"{_PROJECT_ROOT}/data/processed/bm25_index"
@@ -43,13 +43,13 @@ def load_index() -> Tuple[bm25s.BM25, List[Tuple[str, int, int]]]:
         if (not os.path.exists(BM25_PATH)):
             raise FileNotFoundError(
                 "BM25 index not found. Run:\n"
-                "  uv run python -m student index"
+                "  uv run python -m src index"
                                    )
 
         if (not os.path.exists(CHUNKS_PATH)):
             raise FileNotFoundError(
                 "Chunk metadata not found. Run:\n"
-                "  uv run python -m student index"
+                "  uv run python -m src index"
                                    )
 
         retriever = bm25s.BM25.load(BM25_PATH, load_corpus=False)

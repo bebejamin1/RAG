@@ -13,7 +13,7 @@
 
 import re
 
-from student.src.pydantic import MinimalSource
+from src.pydantic import MinimalSource
 from transformers import pipeline, GenerationConfig
 from typing import Dict, List, Optional, Any
 

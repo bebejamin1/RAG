@@ -11,7 +11,7 @@
 # **************************************************************************** #
 
 
-UV		= uv run python -m student.src
+UV		= uv run python -m src
 
 RAW_SEARCH_QUERY	= $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
 RAW_ANSWER_QUERY	= $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
@@ -20,11 +20,11 @@ RAW_ANSWER_QUERY	= $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
 # TYPE=docs (default) or TYPE=code — e.g. `make evaluate TYPE=code`
 TYPE		?= docs
 
-DATASET		= datasets_public/public/UnansweredQuestions/dataset_$(TYPE)_public.json
+DATASET		= data/datasets/UnansweredQuestions/dataset_$(TYPE)_public.json
 
-GT_DATASET	= datasets_public/public/AnsweredQuestions/dataset_$(TYPE)_public.json
-SEARCH_OUT	= data/output/search_results
-ANSWER_OUT	= data/output/search_results_and_answer
+GT_DATASET	= data/datasets/AnsweredQuestions/dataset_$(TYPE)_public.json
+SEARCH_OUT	= data/output/search_results/UnansweredQuestions
+ANSWER_OUT	= data/output/search_results_and_answer/UnansweredQuestions
 REPO		= data/raw/vllm-0.10.1
 K		= 10
 
@@ -62,7 +62,7 @@ run : check-venv
 	@$(UV)
 
 debug : check-venv
-	@uv run python -m pdb -m student.src
+	@uv run python -m pdb -m src
 
 all : help
 
@@ -136,7 +136,7 @@ evaluate_one : check-index $(SEARCH_RESULT)
 	@echo ""
 	@echo "$(PINK)EVALUATION RECALL@K — $(TYPE)$(NC)"
 	@$(UV) evaluate \
-		--student_answer_path=$(SEARCH_RESULT) \
+		--student_search_results_path=$(SEARCH_RESULT) \
 		--dataset_path=$(GT_DATASET) \
 		--k=$(K)
 
@@ -145,10 +145,17 @@ evaluate_one : check-index $(SEARCH_RESULT)
 lint : check-venv
 	@echo ""
 	@echo "$(RED)TESTING FLAKE8 / MYPY...$(NC)"
-	@uv run flake8 student/
-	@uv run mypy student/ --cache-dir .mypy_cache \
+	@uv run flake8 .
+	@uv run mypy . --cache-dir .mypy_cache \
 		--warn-return-any --warn-unused-ignores \
 		--ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
+	@echo ""
+
+lint-strict : check-venv
+	@echo ""
+	@echo "$(RED)TESTING FLAKE8 / MYPY --strict...$(NC)"
+	@uv run flake8 .
+	@uv run mypy . --cache-dir .mypy_cache --strict
 	@echo ""
 
 # ── Nettoyage ────────────────────────────────────────────────────────────── #
@@ -177,5 +184,5 @@ clean_output :
 fclean : clean clean_index clean_output
 
 .PHONY: all help install run debug index search answer search_dataset \
-        answer_dataset evaluate evaluate_one prepare_search lint clean \
-        clean_index clean_output fclean check-venv check-index
+        answer_dataset evaluate evaluate_one prepare_search lint lint-strict \
+        clean clean_index clean_output fclean check-venv check-index
