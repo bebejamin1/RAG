@@ -3,7 +3,7 @@ name = "rag"
 version = "0.1.0"
 description = "Retrieval-Augmented Generation pipeline (ingestion, chunking, BM25/TF-IDF retrieval, recall@k evaluation, LLM answer generation) over a code repository."
 readme = "README.md"
-requires-python = ">=3.14.1"
+requires-python = ">=3.11"
 dependencies = [
 	"langchain-text-splitters>=1.1.2",
 	"colorama>=0.4.6",

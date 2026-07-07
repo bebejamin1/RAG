@@ -95,18 +95,18 @@ module. Each result is returned as
 
 ## Performance Analysis
 
-Measured on the 100-question public and private datasets (k = 10):
+Measured with the official `moulinette` on the 100-question public datasets
+(k = 10). Only the public datasets are available to students; private
+datasets are held by the reviewers and not measured here.
 
-| Dataset       | Recall@5  | Recall@10 | Threshold |
-|---------------|-----------|-----------|-----------|
-| docs public   | **0.850** | 0.930     | ≥ 0.80    |
-| docs private  | **0.850** | 0.890     | ≥ 0.80    |
-| code public   | **0.550** | 0.600     | ≥ 0.50    |
-| code private  | **0.520** | 0.590     | ≥ 0.50    |
+| Dataset     | Recall@1 | Recall@3 | Recall@5  | Recall@10 | Threshold |
+|-------------|----------|----------|-----------|-----------|-----------|
+| docs public | 0.650    | 0.780    | **0.840** | 0.900     | ≥ 0.80    |
+| code public | 0.310    | 0.470    | **0.550** | 0.600     | ≥ 0.50    |
 
 System performance (required limits in parentheses):
 
-- Indexing: ~4 s for 1952 files / 14 109 chunks (limit: 5 min)
+- Indexing: ~2-4 s for 1952 files / 14 109 chunks (limit: 5 min)
 - Retrieval throughput: 100 questions run in well under a second, far
   below the 90 s / 200 questions limit
 
@@ -159,12 +159,6 @@ uv run python -m src evaluate \
     --dataset_path data/datasets/AnsweredQuestions/dataset_docs_public.json \
     --k 10
 ```
-
-## Bonus
-
-- **Index caching**: the BM25 index and chunk metadata are persisted
-  under `data/processed/` at indexing time and transparently reloaded by
-  every later command, so search never re-ingests the repository.
 
 ## Resources
 
