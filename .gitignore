@@ -5,7 +5,10 @@
 moulinette
 moulinette-ubuntu
 moulinette-fedora
-data
+output
+vllm-0.10.1
+chunks
+bm25_index
 
 
 # Byte-compiled / optimized / DLL files

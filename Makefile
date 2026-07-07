@@ -13,10 +13,6 @@
 
 UV		= uv run python -m src
 
-RAW_SEARCH_QUERY	= $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
-RAW_ANSWER_QUERY	= $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
-
-
 # TYPE=docs (default) or TYPE=code — e.g. `make evaluate TYPE=code`
 TYPE		?= docs
 
@@ -34,6 +30,14 @@ YELLOW		= \033[0;33m
 BLUE		= \033[0;34m
 PINK		= \033[35m
 NC		= \033[0m
+
+# Lets `make search "some question"` / `make answer "some question"` work
+# without Q=: everything after the target name is joined back into one
+# string. This only covers the query text — "-k"/"--k" can never be
+# passed this way (make's own option parser swallows them as an
+# abbreviation of --keep-going before the Makefile is even read), so
+# overriding k still requires K=10.
+RAW_QUERY	= $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
 
 ifneq ($(filter search answer,$(firstword $(MAKECMDGOALS))),)
 .DEFAULT:
@@ -75,8 +79,8 @@ help :
 	@echo ""
 	@echo "  $(GREEN)make $(NC)                   Install dependencies"
 	@echo "  $(GREEN)make index$(NC)              Index the vLLM (BM25) repository"
-	@echo "  $(GREEN)make search Q=\"...\"$(NC)   Test the retriever on a question"
-	@echo "  $(GREEN)make answer Q=\"...\"$(NC)   Complete RAG chain for a given question"
+	@echo "  $(GREEN)make search \"...\" [K=10]$(NC)  Test the retriever on a question"
+	@echo "  $(GREEN)make answer \"...\" [K=10]$(NC)  Complete RAG chain for a given question"
 	@echo "  $(GREEN)make search_dataset$(NC)     Search the entire dataset"
 	@echo "  $(GREEN)make answer_dataset$(NC)     Generates LLM responses for the dataset"
 	@echo "  $(GREEN)make evaluate$(NC)           Recall@k on docs AND code"
@@ -94,15 +98,17 @@ help :
 index : check-venv
 	@$(UV) index --repo_path=$(REPO)
 
-# make search Q="What is vLLM ?"
+# Usage: make search "What is vLLM ?" [K=10]  — or  make search Q="..." K=10
+# "-k"/"--k" cannot be passed positionally (see RAW_QUERY note above);
+# use K=10 to override the number of results.
 search : check-venv check-index
-	@QUERY="$(strip $(if $(Q),$(Q),$(RAW_SEARCH_QUERY)))"; \
+	@QUERY="$(strip $(if $(Q),$(Q),$(RAW_QUERY)))"; \
 	$(UV) search --query="$$QUERY" --k=$(K)
 
-# make answer Q="What is vLLM ?"
+# Usage: make answer "What is vLLM ?" [K=10]  — or  make answer Q="..." K=10
 answer : check-venv check-index
-	@QUERY="$(strip $(if $(Q),$(Q),$(RAW_ANSWER_QUERY)))"; \
-	echo ""; \
+	@echo ""
+	@QUERY="$(strip $(if $(Q),$(Q),$(RAW_QUERY)))"; \
 	$(UV) answer --query="$$QUERY" --k=$(K)
 
 SEARCH_RESULT	= $(SEARCH_OUT)/$(notdir $(DATASET))

@@ -7,7 +7,7 @@
 #   By: bbeaurai <bbeaurai@student.42lehavre.fr>     +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/06/22 14:51:11 by bbeaurai            #+#    #+#            #
-#   Updated: 2026/07/02 11:40:04 by bbeaurai           ###   ########.fr      #
+#   Updated: 2026/07/07 11:20:29 by bbeaurai           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
@@ -146,7 +146,7 @@ def chunk_text(
 
     char_split = RecursiveCharacterTextSplitter(
         chunk_size=max_size,
-        chunk_overlap=200,
+        chunk_overlap=int((max_size/100)*10),  # 10% overlap
         add_start_index=True)
 
     documents = char_split.create_documents([content])
