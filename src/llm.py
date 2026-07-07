@@ -13,11 +13,13 @@
 
 import re
 
-from src.pydantic import MinimalSource
 from transformers import pipeline, GenerationConfig
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Tuple, Any
 
 _cache_pipeline: Optional[Any] = None
+
+# (file_path, first_character_index, last_character_index)
+Source = Tuple[str, int, int]
 
 
 # *****************************************************************************
@@ -25,6 +27,10 @@ _cache_pipeline: Optional[Any] = None
 # *                                                                           *
 
 def load_llm() -> None:
+    """Load and cache the Qwen/Qwen3-0.6B text-generation pipeline.
+
+    Subsequent calls are no-ops once the pipeline is cached.
+    """
 
     global _cache_pipeline
 
@@ -42,25 +48,28 @@ def load_llm() -> None:
 # *                           READ SOURCES                                    *
 # *                                                                           *
 
-def read_source(src: MinimalSource) -> str:
+def read_source(src: Source) -> str:
+    """Read the excerpt of a source file covered by a retrieval result.
+
+    Args:
+        src: A (file_path, first_character_index, last_character_index)
+            tuple identifying the excerpt to read.
+
+    Returns:
+        The text between first_character_index and last_character_index,
+        or an empty string if the file cannot be read.
+    """
+
+    file_path, first_character_index, last_character_index = src
 
     try:
-        with open(src[0], "r", encoding="utf-8",
-                  errors="ignore") as f:
+        with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
             content = f.read()
-            return content[src[1]:src[2]]
+        return content[first_character_index:last_character_index]
 
-    except TypeError:
-        try:
-            with open(src.file_path, "r", encoding="utf-8",
-                      errors="ignore") as f:
-                content = f.read()
-            return content[
-                src.first_character_index:src.last_character_index]
-
-        except Exception:
-            print("[ERROR]")
-            exit()
+    except OSError as e:
+        print(f"[WARN] Could not read source {file_path}: {e}")
+        return ""
 
 
 # *****************************************************************************
@@ -68,7 +77,18 @@ def read_source(src: MinimalSource) -> str:
 # *                                                                           *
 
 def make_message(query: str,
-                 sources: List[MinimalSource]) -> List[Dict[str, str]]:
+                 sources: List[Source]) -> List[Dict[str, str]]:
+    """Build the chat messages sent to the LLM for answer generation.
+
+    Args:
+        query: The user's question.
+        sources: Retrieved sources to ground the answer in, read and
+            concatenated into a bounded context window.
+
+    Returns:
+        A list of chat messages (system + user) ready for the pipeline.
+    """
+
     context = ""
     limit = 2000 * len(sources)
 
@@ -117,7 +137,19 @@ def make_message(query: str,
 # *                            GEN ANSWER                                     *
 # *                                                                           *
 
-def gen_answer(query: str, sources: List[MinimalSource]) -> str:
+def gen_answer(query: str, sources: List[Source]) -> str:
+    """Generate a grounded natural-language answer from retrieved sources.
+
+    Args:
+        query: The user's question.
+        sources: Retrieved sources to ground the answer in.
+
+    Returns:
+        The generated answer text, with any <think> reasoning stripped.
+
+    Raises:
+        ValueError: If the model produces an empty answer.
+    """
 
     message = make_message(query, sources)
 
@@ -128,10 +160,10 @@ def gen_answer(query: str, sources: List[MinimalSource]) -> str:
         message, generation_config=gen_conf)
 
     try:
-        raw = result[0]["generated_text"][-1]["content"]
-    except Exception:
-        print("\n", result, "\n")
-        raw = result
+        raw = str(result[0]["generated_text"][-1]["content"])
+    except (IndexError, KeyError, TypeError) as e:
+        print(f"[WARN] Unexpected pipeline output: {e}\n{result}")
+        raw = ""
 
     answer = re.sub(r"<think>.*?</think>", "", raw, flags=re.DOTALL).strip()
 

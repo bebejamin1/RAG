@@ -59,7 +59,7 @@ The unzipped vLLM repository is expected under `data/raw/vllm-0.10.1`
 - `src/main.py` — Python Fire CLI exposing `index`, `search`,
   `search_dataset`, `answer`, `answer_dataset`, `evaluate`
 - All data exchanged between stages is validated by the pydantic models
-  of `src/pydantic.py` (the 7 models required by the subject).
+  of `src/pydantic.py` (the models required by the subject).
 
 ## Chunking Strategy
 
@@ -178,11 +178,6 @@ uv run python -m src evaluate \
 - [Fire](https://github.com/google/python-fire)
 - [Fire guide](https://google.github.io/python-fire/guide/)
 - [Regex example](https://regex101.com/)
-- []()
-- []()
-- []()
-- []()
-- []()
 
 ## 🤖 AI Usage
 

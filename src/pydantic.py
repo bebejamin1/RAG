@@ -11,8 +11,10 @@
 #                                                                             #
 # ########################################################################### #
 
+import uuid
+
 from typing import List
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 # *****************************************************************************
@@ -43,11 +45,11 @@ class UnansweredQuestion(BaseModel):
     """Represent a question that has not yet been answered.
 
     Attributes:
-        question_id: Unique identifier for the question.
+        question_id: Unique identifier, auto-generated when absent.
         question: The raw question text.
     """
 
-    question_id: str
+    question_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     question: str
 
 
@@ -93,12 +95,18 @@ class MinimalSearchResults(BaseModel):
 
     Attributes:
         question_id: Unique identifier of the queried question.
-        question: The question text used for retrieval.
+        question: The question text used for retrieval (subject-documented
+            field name).
+        question_str: Same question text, duplicated under the field
+            name the shipped moulinette binary actually validates
+            against. Kept alongside `question` since both have been
+            observed in the wild; harmless extra output otherwise.
         retrieved_sources: Ordered list of source excerpts retrieved.
     """
 
     question_id: str
     question: str
+    question_str: str
     retrieved_sources: List[MinimalSource]
 
 
@@ -141,14 +149,13 @@ class StudentSearchResults(BaseModel):
 # *                 StudentSearchResultsAndAnswer                             *
 # *             represent search results with answers                         *
 
-class StudentSearchResultsAndAnswer(StudentSearchResults):
+class StudentSearchResultsAndAnswer(BaseModel):
     """Represent retrieval results with answers produced by a student pipeline.
-
-    Inherits:
-        StudentSearchResults: Provides search_results and k fields.
 
     Attributes:
         search_results: List of per-question retrieval results with answers.
+        k: Number of sources retrieved per question.
     """
 
     search_results: List[MinimalAnswer]
+    k: int

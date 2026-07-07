@@ -38,6 +38,13 @@ CHUNKS_PATH = f"{_PROJECT_ROOT}/data/processed/chunks/chunks.pkl"
 # *                                                                           *
 
 def load_index() -> Tuple[bm25s.BM25, List[Tuple[str, int, int]]]:
+    """Load the persisted BM25 index and chunk metadata from disk.
+
+    Returns:
+        A tuple of the loaded BM25 retriever and the list of
+        (file_path, first_character_index, last_character_index) chunk
+        locations, in the same order used to build the index.
+    """
 
     try:
         if (not os.path.exists(BM25_PATH)):
@@ -68,6 +75,15 @@ def load_index() -> Tuple[bm25s.BM25, List[Tuple[str, int, int]]]:
 # *                                                                           *
 
 def load_files(path_dir: str) -> List[Tuple[str, str]]:
+    """Read every indexable file under a directory.
+
+    Args:
+        path_dir: Root directory to walk recursively.
+
+    Returns:
+        A list of (relative_path, content) pairs for each indexable
+        file found, skipping ignored directories and unreadable files.
+    """
 
     files = []
 
@@ -105,6 +121,16 @@ def load_files(path_dir: str) -> List[Tuple[str, str]]:
 # *                                                                           *
 
 def index_main(path_dir: str, max_chunk_size: int) -> None:
+    """Chunk a repository and persist a BM25 index for retrieval.
+
+    Args:
+        path_dir: Root directory of the corpus to ingest.
+        max_chunk_size: Maximum number of characters per chunk.
+
+    Raises:
+        ValueError: If no indexable files are found, or if reading the
+            corpus fails.
+    """
 
     try:
 

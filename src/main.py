@@ -17,6 +17,7 @@ import os
 import fire
 import time
 
+from typing import List, Tuple
 from tqdm import tqdm
 from src.indexing import _PROJECT_ROOT, index_main, load_index
 from src.retriever import search
@@ -38,6 +39,9 @@ from src.pydantic import (
 # *                                                                           *
 
 class RagSystem():
+    """Python Fire CLI exposing the RAG pipeline: index, search, answer,
+    and evaluate.
+    """
 
     def __init__(self) -> None:
         self.ra = c.Style.RESET_ALL
@@ -49,6 +53,14 @@ class RagSystem():
     def index(self,
               repo_path: str = f"{_PROJECT_ROOT}/data/raw/vllm-0.10.1",
               max_chunk_size: int = 2000) -> None:
+        """Ingest a repository and persist a BM25 index under
+        data/processed/.
+
+        Args:
+            repo_path: Root directory of the corpus to ingest.
+            max_chunk_size: Maximum number of characters per chunk
+                (must be between 2 and 2000).
+        """
 
         try:
 
@@ -64,13 +76,19 @@ class RagSystem():
 
             index_main(repo_path, max_chunk_size)
 
-        except (Exception, ValueError) as e:
+        except Exception as e:
             print(f"{self.r}[ERROR]{self.rs}: {e}")
             exit()
 
 # ============================ SEARCH =========================================
 
     def search(self, query: str, k: int = 5) -> None:
+        """Search the index for a single query and print the top-k sources.
+
+        Args:
+            query: The question to search for.
+            k: Number of top results to retrieve.
+        """
 
         if (k <= 0):
             print("k cannot be less than or equal to 0")
@@ -112,6 +130,7 @@ class RagSystem():
         result = MinimalSearchResults(
             question_id="single-query",
             question=query,
+            question_str=query,
             retrieved_sources=sources)
 
         data = result.model_dump()
@@ -138,6 +157,12 @@ class RagSystem():
 # =============================== ANSWER ======================================
 
     def answer(self, query: str, k: int = 5) -> None:
+        """Answer a single query using context retrieved from the index.
+
+        Args:
+            query: The question to answer.
+            k: Number of top sources to retrieve as context.
+        """
 
         if (not query or not query.strip()):
             print("\n" + f"{self.r}[ERROR]{self.rs}:"
@@ -156,14 +181,18 @@ class RagSystem():
         print(" ANSWER ".center(79, "="))
         print("".center(79, "=") + self.ra + "\n\n")
 
-        sources: list[MinimalSource] = search(  # type: ignore[assignment]
+        sources: List[Tuple[str, int, int]] = search(
             query, retriever, chunk_metadata, k=k)
 
         print("Loading model: " + c.Fore.MAGENTA + "Qwen/Qwen3-0.6B" + "\n" +
               c.Fore.RESET)
         load_llm()
 
-        answer_text = gen_answer(query, sources)
+        try:
+            answer_text = gen_answer(query, sources)
+        except ValueError as e:
+            print(f"{self.r}[ERROR]{self.rs}: {e}")
+            exit()
 
         minimal_sources = [
             MinimalSource(
@@ -176,6 +205,7 @@ class RagSystem():
 
         _ = MinimalAnswer(question_id="single-query",
                           question=query,
+                          question_str=query,
                           retrieved_sources=minimal_sources,
                           answer=answer_text)
 
@@ -204,6 +234,16 @@ class RagSystem():
         k: int = 5,
         save_directory: str = "",
                       ) -> None:
+        """Run search over a whole dataset and save a StudentSearchResults
+        JSON file.
+
+        Args:
+            dataset_path: Path to a JSON RagDataset file.
+            k: Number of top sources to retrieve per question.
+            save_directory: Directory to write the output JSON to; the
+                output filename mirrors dataset_path's basename. If
+                empty, results are not saved to disk.
+        """
 
         os.system("clear")
 
@@ -234,7 +274,7 @@ class RagSystem():
         all_results = []
         for item in tqdm(dataset.rag_questions, "Search", colour="BLUE"):
             q = UnansweredQuestion.model_validate(item.model_dump())
-            results: list[MinimalSource] = search(  # type: ignore[assignment]
+            results: List[Tuple[str, int, int]] = search(
                 q.question, retriever, chunk_metadata, k=k)
 
             sources = [
@@ -250,6 +290,7 @@ class RagSystem():
                 MinimalSearchResults(
                     question_id=q.question_id,
                     question=q.question,
+                    question_str=q.question,
                     retrieved_sources=sources,
                                     )
                               )
@@ -282,6 +323,19 @@ class RagSystem():
         student_search_results_path: str,
         save_directory: str
                       ) -> None:
+        """Generate answers for every question in a search-results file.
+
+        Args:
+            student_search_results_path: Path to a JSON
+                StudentSearchResults file (produced by search_dataset).
+            save_directory: Directory to write the
+                StudentSearchResultsAndAnswer JSON output to; the output
+                filename mirrors student_search_results_path's basename.
+        """
+
+        if not save_directory or not save_directory.strip():
+            print(f"{self.r}[ERROR]{self.rs}: save_directory cannot be empty")
+            exit()
 
         try:
             with open(student_search_results_path, "r") as f:
@@ -298,7 +352,6 @@ class RagSystem():
             exit()
 
         load_llm()
-        # os.system("clear")
 
         start_time = time.perf_counter()
 
@@ -314,11 +367,15 @@ class RagSystem():
         for data in tqdm(dataset.search_results,
                          "Generating Responses", colour="GREEN"):
 
-            sources: list[MinimalSource] = search(  # type: ignore[assignment]
+            sources: List[Tuple[str, int, int]] = search(
                     data.question, retriever,
                     chunk_metadata, k=dataset.k)
 
-            a = gen_answer(data.question, sources)
+            try:
+                a = gen_answer(data.question, sources)
+            except ValueError as e:
+                print(f"{self.r}[WARN]{self.rs}: {e}")
+                a = ""
 
             minimal_sources = [
                 MinimalSource(
@@ -331,6 +388,7 @@ class RagSystem():
 
             answer = MinimalAnswer(question_id=data.question_id,
                                    question=data.question,
+                                   question_str=data.question,
                                    retrieved_sources=minimal_sources,
                                    answer=a)
             all_answers.append(answer)
@@ -359,6 +417,18 @@ class RagSystem():
         dataset_path: str,
         k: int = 10,
                 ) -> None:
+        """Report recall@k for a search-results file against ground truth.
+
+        This command is for local iteration only; the official recall@k
+        used during the defense is computed by the moulinette.
+
+        Args:
+            student_search_results_path: Path to a JSON
+                StudentSearchResults file to evaluate.
+            dataset_path: Path to the ground-truth JSON RagDataset file.
+            k: Maximum k to report recall@k for (1, 3, 5, 10, and k
+                itself are reported when applicable).
+        """
 
         if (k <= 0):
             print("k cannot be less than or equal to 0")
@@ -426,6 +496,7 @@ class RagSystem():
 # *                                                                           *
 
 def main() -> None:
+    """Entry point: expose RagSystem as a Python Fire CLI."""
     try:
         fire.Fire(RagSystem)
     except KeyboardInterrupt:

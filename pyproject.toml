@@ -3,7 +3,7 @@ name = "rag"
 version = "0.1.0"
 description = "Retrieval-Augmented Generation pipeline (ingestion, chunking, BM25/TF-IDF retrieval, recall@k evaluation, LLM answer generation) over a code repository."
 readme = "README.md"
-requires-python = "==3.14.4"
+requires-python = ">=3.14.1"
 dependencies = [
 	"langchain-text-splitters>=1.1.2",
 	"colorama>=0.4.6",
@@ -70,6 +70,12 @@ dependencies = [
     "typing-extensions==4.15.0",
     "typing-inspection==0.4.2",
     "uv==0.11.19",
+]
+
+[dependency-groups]
+dev = [
+    "flake8>=7.0.0",
+    "mypy>=1.10.0",
 ]
 
 [tool.mypy]

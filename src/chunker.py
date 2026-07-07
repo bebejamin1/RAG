@@ -27,6 +27,14 @@ INDEXABLE_EXTENSIONS = {'.py', '.md', '.rst', '.txt'}
 # *                                                                           *
 
 def is_indexable(file_path: str) -> bool:
+    """Check whether a file's extension is one this project chunks.
+
+    Args:
+        file_path: Path to the candidate file.
+
+    Returns:
+        True if the file extension is in INDEXABLE_EXTENSIONS.
+    """
 
     if ('.' not in file_path.rsplit('/', 1)[-1]):
         return False
@@ -121,6 +129,17 @@ def chunk_python(
 def chunk_text(
     file_path: str, content: str, max_size: int
               ) -> List[Chunk]:
+    """Chunk plain text or Markdown content with a recursive splitter.
+
+    Args:
+        file_path: Path recorded alongside each chunk.
+        content: Raw text content to split.
+        max_size: Maximum number of characters per chunk.
+
+    Returns:
+        A list of (file_path, first_character_index, last_character_index,
+        text) chunks covering the content.
+    """
 
     if (not content):
         return []
@@ -147,6 +166,16 @@ def chunk_text(
 def chunker(
     file_path: str, content: str, max_size: int
            ) -> List[Chunk]:
+    """Dispatch a file to the chunking strategy matching its type.
+
+    Args:
+        file_path: Path to the file being chunked.
+        content: Raw file content.
+        max_size: Maximum number of characters per chunk.
+
+    Returns:
+        Python-aware chunks for .py files, plain-text chunks otherwise.
+    """
 
     if file_path.endswith('.py'):
         return (chunk_python(file_path, content, max_size))
